@@ -1,0 +1,427 @@
+:root {
+  --nude:        #F5EDE5;
+  --nude-light:  #FDF8F4;
+  --nude-mid:    #EDE0D8;
+  --nude-dark:   #D9C8BC;
+  --rose:        #B76E79;
+  --rose-light:  #D4A5A5;
+  --rose-dark:   #8B4A52;
+  --rose-muted:  #C8909A;
+  --text-dark:   #3A2020;
+  --text-mid:    #7A5050;
+  --text-light:  #B09090;
+  --white:       #FFFFFF;
+  --shadow:      rgba(139,74,82,0.12);
+  --container-width: 1440px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--nude-light);
+  color: var(--text-dark);
+  font-family: 'Jost', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── ANNOUNCEMENT BAR ── */
+.announcement {
+  background: linear-gradient(90deg, var(--rose-dark), var(--rose), var(--rose-muted), var(--rose));
+  background-size: 300% 100%;
+  animation: slideGrad 5s linear infinite;
+  color: #fff;
+  text-align: center;
+  padding: 10px 12px;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-family: 'Jost', sans-serif;
+}
+@keyframes slideGrad {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* ── NAV ── */
+nav {
+  background: rgba(237, 224, 216, 0.95);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--nude-dark);
+  position: sticky; top: 0; z-index: 100;
+}
+
+.nav-container {
+  max-width: var(--container-width);
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hamburger { 
+  font-size: 22px; 
+  color: var(--text-mid); 
+  cursor: pointer;
+  display: none;
+}
+
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: var(--rose-dark);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.nav-logo:hover { color: var(--rose); }
+
+.nav-menu {
+  display: flex;
+  gap: 36px;
+  align-items: center;
+}
+
+.nav-menu a {
+  color: var(--text-mid);
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: color 0.3s;
+  position: relative;
+}
+
+.nav-menu a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--rose);
+  transition: width 0.3s;
+}
+
+.nav-menu a:hover {
+  color: var(--rose-dark);
+}
+
+.nav-menu a:hover::after {
+  width: 100%;
+}
+
+.nav-icons { 
+  display: flex; 
+  gap: 20px; 
+  align-items: center; 
+}
+
+.nav-icons button {
+  background: none; border: none; cursor: pointer;
+  font-size: 20px; color: var(--text-mid);
+  position: relative;
+  transition: color .2s, transform .2s;
+}
+.nav-icons button:hover { 
+  color: var(--rose);
+  transform: scale(1.1);
+}
+
+.cart-badge {
+  position: absolute; top: -6px; right: -8px;
+  background: var(--rose);
+  color: white; font-size: 9px; font-weight: 700;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Jost', sans-serif;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  min-height: 600px;
+  background: linear-gradient(160deg, var(--nude-mid) 0%, var(--nude-light) 60%, var(--white) 100%);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+}
+
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.blob1 { 
+  width:400px;
+  height:400px;
+  background:var(--rose-light);
+  top:-100px;
+  right:-100px; 
+  animation:drift 8s ease-in-out infinite; 
+}
+
+.blob2 { 
+  width:300px;
+  height:300px;
+  background:var(--nude-dark);
+  bottom:-80px;
+  left:-80px; 
+  animation:drift 10s ease-in-out infinite reverse; 
+}
+
+.blob3 { 
+  width:200px;
+  height:200px;
+  background:var(--rose-muted);
+  top:50%;
+  right:10%; 
+  animation:drift 6s ease-in-out infinite 2s; 
+}
+
+@keyframes drift {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%      { transform: translate(20px,-25px) scale(1.05); }
+}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(183,110,121,0.1);
+  border: 1px solid rgba(183,110,121,0.25);
+  border-radius: 30px;
+  padding: 8px 20px;
+  font-size: 11px; letter-spacing: 2.5px;
+  color: var(--rose); text-transform: uppercase;
+  font-weight: 600; margin-bottom: 24px;
+  animation: fadeUp .6s ease both;
+}
+
+.hero-eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 13px; letter-spacing: 6px;
+  color: var(--rose-muted); text-transform: uppercase;
+  margin-bottom: 10px;
+  animation: fadeUp .6s .1s ease both;
+  display: flex; align-items: center; gap: 16px;
+}
+
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; width: 50px; height: 1px; background: var(--rose-light);
+}
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 140px; line-height: 0.88;
+  color: var(--rose-dark);
+  letter-spacing: 4px;
+  animation: fadeUp .6s .2s ease both;
+  position: relative;
+}
+
+.hero-title span {
+  display: block; font-family: 'Playfair Display', serif;
+  font-style: italic; font-size: 0.38em;
+  color: var(--text-mid); letter-spacing: 6px;
+  margin-bottom: 8px; line-height: 1.4;
+}
+
+.hero-sub {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 22px; color: var(--text-mid);
+  margin: 20px 0 40px; letter-spacing: 0.5px;
+  animation: fadeUp .6s .3s ease both;
+  max-width: 600px;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(22px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.hero-btns { 
+  display: flex; 
+  gap: 16px; 
+  animation: fadeUp .6s .4s ease both; 
+}
+
+.btn-primary {
+  background: var(--rose);
+  color: #fff;
+  border: none;
+  padding: 16px 42px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 2.5px;
+  border-radius: 50px; cursor: pointer;
+  transition: background .25s, transform .2s, box-shadow .25s;
+  box-shadow: 0 6px 24px rgba(183,110,121,0.35);
+}
+
+.btn-primary:hover {
+  background: var(--rose-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(139,74,82,0.4);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--rose-dark);
+  border: 2px solid var(--rose);
+  padding: 16px 38px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 2px;
+  border-radius: 50px; cursor: pointer;
+  transition: all .25s;
+}
+
+.btn-secondary:hover {
+  background: var(--rose);
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(183,110,121,0.3);
+}
+
+@media (max-width: 768px) {
+  .nav-menu {
+    display: none; /* We can add a mobile drawer later */
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+    gap: 15px !important;
+  }
+
+  .cart-container {
+    flex-direction: column !important;
+  }
+
+  .sec-title {
+    font-size: 32px !important;
+  }
+}
+
+/* 1. Make the Search Bar glow when clicked */
+input:focus {
+  border-color: var(--rose) !important;
+  box-shadow: 0 0 10px rgba(181, 101, 118, 0.2);
+  transition: 0.3s;
+}
+
+/* 2. Style those new Quantity Buttons */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* 3. Add a smooth fade-in for the products */
+.product-card {
+  animation: fadeIn 0.8s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Carousel Styling */
+.main-carousel {
+  height: 85vh;
+  width: 100%;
+}
+
+.hero-slide {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* Add different soft nude gradients for slides since we don't have images yet */
+.slide-1 { background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1500&q=80'); }
+.slide-2 { background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1500&q=80'); }
+
+.hero-content {
+  text-align: center;
+  color: white;
+  animation: fadeUp 1s ease;
+}
+
+.hero-content span { letter-spacing: 4px; font-size: 14px; }
+.hero-content h1 { 
+  font-family: 'Bebas Neue', sans-serif; 
+  font-size: clamp(4rem, 8vw, 7rem); 
+  margin: 10px 0 30px; 
+}
+
+/* Category Grid */
+.cat-grid {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 40px 0;
+  flex-wrap: wrap;
+}
+
+.cat-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--nude-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  transition: 0.3s;
+  cursor: pointer;
+  border: 1px solid var(--nude-dark);
+}
+
+.cat-circle:hover { transform: scale(1.1); background: var(--rose-light); }
+
+/* Featured Sneak Peek */
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  padding-top: 30px;
+}
+
+.mini-card {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.mini-img { font-size: 50px; margin-bottom: 15px; }
+
+.brand-story {
+  padding: 100px 20px;
+  background: var(--text-dark);
+  color: white;
+  text-align: center;
+}
+
+.story-box { max-width: 800px; margin: 0 auto; }
+.story-box h2 { font-family: 'Playfair Display', serif; font-size: 40px; margin-bottom: 20px; }
