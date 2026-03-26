@@ -21,7 +21,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Main API Routes
+// API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/payment', paymentRoutes); 
 
