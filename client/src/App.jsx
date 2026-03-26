@@ -1,7 +1,7 @@
 import { useState, useContext, createContext, useReducer, useEffect } from "react";
 
 // ═══════════════════════════════════════════
-// THEME & CONSTANTS
+// THEME & CONSTANTS (Your Luxury Palette)
 // ═══════════════════════════════════════════
 const T = {
   bg: '#FDF8F4', nude: '#F5EDE5', nudeMid: '#EDE0D8', nudeDark: '#D9C8BC',
@@ -14,27 +14,37 @@ const CATS = ['All','Lips','Eyes','Face','Nails'];
 const Ctx = createContext();
 
 // ═══════════════════════════════════════════
-// ENGINE: REDUCER
+// ENGINE: DRAWER-BASED REDUCER
 // ═══════════════════════════════════════════
 const init = { 
   page: 'home', 
   cart: JSON.parse(localStorage.getItem('facelook_cart')) || [], 
   products: [], 
   loading: true, 
-  drawer: false, 
+  navOpen: false, 
+  cartOpen: false, 
+  authOpen: false,
   toast: null 
 };
 
 function reducer(s, a) {
   switch(a.type) {
     case 'SET_PRODUCTS': return { ...s, products: a.payload, loading: false };
-    case 'GO':    return { ...s, page: a.page, drawer: false };
-    case 'TGL_DRAWER': return { ...s, drawer: !s.drawer };
+    case 'GO': return { ...s, page: a.page, navOpen: false, cartOpen: false, authOpen: false };
+    
+    // Drawer Controls
+    case 'TOGGLE_NAV': return { ...s, navOpen: !s.navOpen, cartOpen: false, authOpen: false };
+    case 'TOGGLE_CART': return { ...s, cartOpen: !s.cartOpen, navOpen: false, authOpen: false };
+    case 'TOGGLE_AUTH': return { ...s, authOpen: !s.authOpen, navOpen: false, cartOpen: false };
+    case 'CLOSE_ALL': return { ...s, navOpen: false, cartOpen: false, authOpen: false };
+
+    // Cart Logic
     case 'CART_ADD': {
       const ex = s.cart.find(i=>i._id===a.p._id);
       const newCart = ex ? s.cart.map(i=>i._id===a.p._id?{...i,qty:i.qty+1}:i) : [...s.cart,{...a.p,qty:1}];
       localStorage.setItem('facelook_cart', JSON.stringify(newCart));
-      return { ...s, cart: newCart };
+      // Automatically open cart drawer like MARS does
+      return { ...s, cart: newCart, cartOpen: true }; 
     }
     case 'CART_QTY': {
       const newCart = s.cart.map(i=>i._id===a.id ? {...i, qty: Math.max(1, a.qty)} : i);
@@ -53,18 +63,63 @@ function reducer(s, a) {
 }
 
 // ═══════════════════════════════════════════
-// COMPONENTS
+// UI COMPONENTS
 // ═══════════════════════════════════════════
+
+const Marquee = () => (
+  <div className="marquee-container">
+    <div className="marquee-content">
+      <span>✦ 100% VEGAN & CRUELTY FREE ✦ FREE SHIPPING ON ORDERS OVER ₹999 ✦ LUXURY REDEFINED ✦</span>
+      <span>✦ 100% VEGAN & CRUELTY FREE ✦ FREE SHIPPING ON ORDERS OVER ₹999 ✦ LUXURY REDEFINED ✦</span>
+    </div>
+  </div>
+);
 
 const PCard = ({ p }) => {
   const {dispatch:d} = useContext(Ctx);
   return (
-    <div className="p-card">
-      <div className="p-img"><img src={p.image || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400'} alt={p.name} /></div>
+    <div className="p-card group">
+      <div className="p-img">
+        <img src={p.image || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400'} alt={p.name} />
+        {/* MARS Style Quick Add Overlay */}
+        <div className="quick-add">
+          <button className="luxe-btn-small" onClick={(e)=> { e.stopPropagation(); d({type:'CART_ADD', p}); }}>ADD TO BAG - ₹{p.price}</button>
+        </div>
+      </div>
       <div className="p-txt">
         <div className="p-name">{p.name}</div>
         <div className="p-price">₹{p.price}</div>
-        <button className="p-add" onClick={()=> { d({type:'CART_ADD', p}); d({type:'TOAST', msg: 'Added to Bag!'}); }}>+</button>
+      </div>
+    </div>
+  );
+};
+
+const HeroCarousel = () => {
+  const {dispatch:d} = useContext(Ctx);
+  const slides = [
+    "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=1600",
+    "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1600"
+  ];
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrent(c => (c + 1) % slides.length), 5000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  return (
+    <div className="hero-slider">
+      {slides.map((img, i) => (
+        <div key={i} className={`hero-slide ${i === current ? 'active' : ''}`} style={{backgroundImage: `url(${img})`}}>
+          <div className="hero-overlay">
+            <h1>{i === 0 ? "THE VELVET MATTE" : "RADIANT GLOW"}</h1>
+            <p>Formulated for the modern queen.</p>
+            <button className="luxe-btn" onClick={()=>d({type:'GO', page:'shop'})}>SHOP THE DROP</button>
+          </div>
+        </div>
+      ))}
+      <div className="slide-dots">
+        {slides.map((_, i) => <div key={i} className={`dot ${i === current ? 'active' : ''}`} onClick={()=>setCurrent(i)} />)}
       </div>
     </div>
   );
@@ -74,20 +129,14 @@ const Home = () => {
   const {state:s, dispatch:d} = useContext(Ctx);
   return (
     <div className="fade-in">
-       <div className="hero" style={{minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1600')`, backgroundSize: 'cover', backgroundPosition: 'center', textAlign: 'center', color: '#fff'}}>
-        <div style={{background: 'rgba(58, 32, 32, 0.6)', padding: '40px', borderRadius: '20px', backdropFilter: 'blur(10px)'}}>
-          <h1 style={{fontFamily: 'Bebas Neue', fontSize: '80px', letterSpacing: '10px'}}>FACÉLOOK</h1>
-          <p style={{fontSize: '20px', letterSpacing: '2px', marginBottom: '20px'}}>LUXURY DEFINED. RADIANCE REVEALED.</p>
-          <button className="luxe-btn" onClick={()=>d({type:'GO', page:'shop'})}>EXPLORE COLLECTION</button>
+      <HeroCarousel />
+      <div className="section" style={{padding: '80px 5%'}}>
+        <div className="section-head">
+          <h2>Trending Now</h2>
+          <span onClick={()=>d({type:'GO', page:'shop'})} className="view-all">View All Products →</span>
         </div>
-      </div>
-      <div className="section" style={{padding: '60px 20px'}}>
-        <div className="section-head" style={{display:'flex', justifyContent:'space-between', alignItems:'center', maxWidth:'1200px', margin:'0 auto', marginBottom: '30px'}}>
-          <h2 style={{fontFamily:'Playfair Display', fontSize:'32px'}}>Trending Now</h2>
-          <span onClick={()=>d({type:'GO', page:'shop'})} style={{cursor:'pointer', color:T.rose, fontWeight:'bold'}}>View All →</span>
-        </div>
-        <div className="carousel" style={{maxWidth:'1200px', margin:'0 auto'}}>
-          {s.products.slice(0, 4).map(p => <PCard key={p._id} p={p} />)}
+        <div className="carousel">
+          {s.products.slice(0, 5).map(p => <PCard key={p._id} p={p} />)}
         </div>
       </div>
     </div>
@@ -97,16 +146,17 @@ const Home = () => {
 const Shop = () => {
   const {state:s} = useContext(Ctx);
   const [cat, setCat] = useState('All');
-  const [search, setSearch] = useState('');
-  const filtered = s.products.filter(p => (cat === 'All' || p.category === cat) && (p.name.toLowerCase().includes(search.toLowerCase())));
+  
+  const filtered = s.products.filter(p => cat === 'All' || p.category === cat);
 
   return (
     <div className="shop-layout fade-in">
-      <aside className="sidebar">
-        <h3>Boutique</h3>
-        <input type="text" placeholder="Search..." className="search-bar" onChange={(e)=>setSearch(e.target.value)} />
-        {CATS.map(c => <div key={c} onClick={()=>setCat(c)} className={`side-item ${cat === c ? 'active' : ''}`}>{c}</div>)}
-      </aside>
+      <div className="shop-header">
+        <h2>{cat === 'All' ? 'All Products' : cat}</h2>
+        <div className="cat-pills">
+          {CATS.map(c => <button key={c} onClick={()=>setCat(c)} className={`cat-pill ${cat === c ? 'active' : ''}`}>{c}</button>)}
+        </div>
+      </div>
       <main className="grid">
         {filtered.length > 0 ? filtered.map(p => <PCard key={p._id} p={p} />) : <div className="p-100">No products found.</div>}
       </main>
@@ -114,65 +164,70 @@ const Shop = () => {
   );
 };
 
-const Cart = () => {
+// ═══════════════════════════════════════════
+// MARS-STYLE SIDE DRAWERS
+// ═══════════════════════════════════════════
+
+const CartDrawer = () => {
   const {state:s, dispatch:d} = useContext(Ctx);
   const total = s.cart.reduce((a,i)=>a+i.price*i.qty,0);
-  if(s.cart.length===0) return <div className="p-100">Your Bag is Empty. 💄</div>;
 
   return (
-    <div className="cart-page fade-in">
-      <h2 style={{fontFamily: 'Playfair Display', marginBottom: '30px'}}>Shopping Bag</h2>
-      <div className="cart-list">
-        {s.cart.map(item => (
-          <div key={item._id} className="cart-item">
-            <img src={item.image} alt={item.name} />
-            <div className="cart-details" style={{flex: 1}}>
-              <h4>{item.name}</h4>
-              <p style={{color: T.roseDark, fontWeight: 'bold'}}>₹{item.price}</p>
-            </div>
-            <div className="qty-ctrl">
-              <button onClick={()=>d({type:'CART_QTY', id:item._id, qty:item.qty-1})}>-</button>
-              <span>{item.qty}</span>
-              <button onClick={()=>d({type:'CART_QTY', id:item._id, qty:item.qty+1})}>+</button>
-            </div>
-            <button className="rm-btn" onClick={()=>d({type:'CART_RM', id:item._id})}>✕</button>
-          </div>
-        ))}
+    <div className={`side-drawer right ${s.cartOpen ? 'open' : ''}`}>
+      <div className="drawer-head">
+        <h3>YOUR BAG ({s.cart.reduce((a,i)=>a+i.qty,0)})</h3>
+        <button className="close-btn" onClick={()=>d({type:'CLOSE_ALL'})}>✕</button>
       </div>
-      <div className="cart-footer" style={{marginTop: '40px', borderTop: `1px solid ${T.border}`, paddingTop: '20px'}}>
-        <div style={{display:'flex', justifyContent:'space-between', fontSize: '24px', fontWeight: 'bold', marginBottom: '20px'}}>
-          <span>Total:</span><span>₹{total}</span>
+      <div className="drawer-body">
+        {s.cart.length === 0 ? <p className="empty-msg">Your bag is empty.</p> : 
+          s.cart.map(item => (
+            <div key={item._id} className="cart-item">
+              <img src={item.image || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=100'} alt={item.name} />
+              <div className="cart-info">
+                <h4>{item.name}</h4>
+                <p>₹{item.price}</p>
+                <div className="qty-ctrl">
+                  <button onClick={()=>d({type:'CART_QTY', id:item._id, qty:item.qty-1})}>-</button>
+                  <span>{item.qty}</span>
+                  <button onClick={()=>d({type:'CART_QTY', id:item._id, qty:item.qty+1})}>+</button>
+                </div>
+              </div>
+              <button className="rm-btn" onClick={()=>d({type:'CART_RM', id:item._id})}>✕</button>
+            </div>
+          ))
+        }
+      </div>
+      {s.cart.length > 0 && (
+        <div className="drawer-foot">
+          <div className="totals"><span>Subtotal:</span><span>₹{total}</span></div>
+          <p className="shipping-msg">Taxes and shipping calculated at checkout.</p>
+          <button className="luxe-btn-full" onClick={()=>alert('Processing Secure Checkout...')}>CHECKOUT • ₹{total}</button>
         </div>
-        <button className="luxe-btn" style={{width:'100%'}} onClick={()=>alert('Redirecting to Payment Gateway...')}>PROCEED TO CHECKOUT</button>
-      </div>
+      )}
     </div>
   );
 };
 
-const Auth = () => {
-  const {dispatch:d} = useContext(Ctx);
+const AuthDrawer = () => {
+  const {state:s, dispatch:d} = useContext(Ctx);
   const [isLogin, setIsLogin] = useState(true);
-  
+
   return (
-    <div className="fade-in" style={{padding: '80px 20px', textAlign: 'center'}}>
-      <div style={{maxWidth: '400px', margin: '0 auto', background: '#fff', padding: '40px', borderRadius: '30px', boxShadow: T.shadow}}>
-          <h2 style={{fontFamily: 'Playfair Display', marginBottom: '10px'}}>{isLogin ? 'Welcome Back' : 'Join the Elite'}</h2>
-          <p style={{color: T.tl, marginBottom: '30px', fontSize: '14px'}}>Access your royal collection and orders.</p>
-          
-          <input type="email" placeholder="Email Address" style={{width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`, outline: 'none'}} />
-          {!isLogin && <input type="text" placeholder="Full Name" style={{width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`, outline: 'none'}} />}
-          <input type="password" placeholder="Password" style={{width: '100%', padding: '15px', marginBottom: '20px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`, outline: 'none'}} />
-          
-          <button className="luxe-btn" style={{width: '100%'}} onClick={() => { d({type: 'TOAST', msg: isLogin ? 'Welcome, Queen!' : 'Account Created!'}); d({type: 'GO', page: 'home'}); }}>
-            {isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'}
-          </button>
-          
-          <p style={{marginTop: '20px', fontSize: '14px', color: T.tm}}>
-            {isLogin ? "New to FACÉLOOK?" : "Already a member?"} 
-            <span onClick={() => setIsLogin(!isLogin)} style={{color: T.rose, cursor: 'pointer', marginLeft: '5px', fontWeight: '700'}}>
-              {isLogin ? 'Sign Up' : 'Login'}
-            </span>
-          </p>
+    <div className={`side-drawer right ${s.authOpen ? 'open' : ''}`}>
+      <div className="drawer-head">
+        <h3>{isLogin ? 'ACCOUNT LOGIN' : 'CREATE ACCOUNT'}</h3>
+        <button className="close-btn" onClick={()=>d({type:'CLOSE_ALL'})}>✕</button>
+      </div>
+      <div className="drawer-body" style={{paddingTop: '40px'}}>
+        <input type="email" placeholder="Email" className="luxe-input" />
+        {!isLogin && <input type="text" placeholder="First Name" className="luxe-input" />}
+        <input type="password" placeholder="Password" className="luxe-input" />
+        <button className="luxe-btn-full" style={{marginTop: '20px'}} onClick={() => { d({type: 'TOAST', msg: 'Welcome back!'}); d({type:'CLOSE_ALL'}); }}>
+          {isLogin ? 'SIGN IN' : 'REGISTER'}
+        </button>
+        <p className="auth-switch" onClick={() => setIsLogin(!isLogin)}>
+          {isLogin ? "Create an account" : "Already have an account? Log in"}
+        </p>
       </div>
     </div>
   );
@@ -199,87 +254,166 @@ export default function App() {
     }
   }, [state.toast]);
 
-  // Pointing to the Auth component we defined earlier
-  const views = { 
-    home: <Home/>, 
-    shop: <Shop/>, 
-    cart: <Cart/>, 
-    login: <Auth/> 
-  };
-
   return (
     <Ctx.Provider value={{state, dispatch}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital@0;1&family=Jost:wght@300;500;700&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Jost', sans-serif; background: ${T.bg}; overflow-x: hidden; }
-
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; }
-        .logo { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 6px; color: ${T.rose}; cursor: pointer; }
-
-        .drawer { position: fixed; top: 0; left: ${state.drawer ? '0' : '-100%'}; width: 320px; height: 100vh; background: ${T.card}; z-index: 2000; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); padding: 80px 40px; box-shadow: 10px 0 50px rgba(0,0,0,0.1); }
-        .overlay { position: fixed; inset: 0; background: rgba(58, 32, 32, 0.4); backdrop-filter: blur(4px); z-index: 1500; display: ${state.drawer ? 'block' : 'none'}; }
-
-        .carousel { display: flex; overflow-x: auto; gap: 20px; padding: 20px; scrollbar-width: none; }
-        .carousel::-webkit-scrollbar { display: none; }
-        .carousel .p-card { min-width: 280px; flex-shrink: 0; }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 30px; padding-bottom: 50px; }
-        .p-card { background: ${T.card}; border-radius: 30px; overflow: hidden; box-shadow: ${T.shadow}; position: relative; transition: 0.3s; height: 100%; }
-        .p-card:hover { transform: translateY(-10px); }
-        .p-img { height: 250px; width: 100%; background: ${T.nude}; overflow: hidden; }
-        .p-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .p-card:hover .p-img img { transform: scale(1.1); }
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital@0;1&family=Jost:wght@300;400;500;700&display=swap');
         
-        .luxe-btn { background: ${T.rose}; color: #fff; border: none; padding: 18px 45px; font-family: 'Bebas Neue'; letter-spacing: 3px; cursor: pointer; border-radius: 60px; transition: 0.3s; }
-        .luxe-btn:hover { background: ${T.roseDark}; letter-spacing: 5px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Jost', sans-serif; background: ${T.bg}; overflow-x: hidden; color: ${T.td}; }
+        button { font-family: 'Jost', sans-serif; }
 
-        .shop-layout { display: flex; padding: 40px 5%; gap: 40px; max-width: 1400px; margin: 0 auto; }
-        .sidebar { width: 250px; display: none; }
-        @media (min-width: 1024px) { .sidebar { display: block; } }
-        .side-item { padding: 15px; cursor: pointer; border-radius: 12px; transition: 0.3s; margin-bottom: 5px; font-weight: 500; }
-        .side-item.active { background: ${T.rose}; color: #fff; }
-        .search-bar { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid ${T.nudeDark}; margin-bottom: 30px; font-family: 'Jost'; }
+        /* MARQUEE */
+        .marquee-container { background: ${T.td}; color: ${T.nude}; padding: 8px 0; overflow: hidden; white-space: nowrap; font-size: 12px; letter-spacing: 2px; }
+        .marquee-content { display: inline-block; animation: scroll 20s linear infinite; }
+        .marquee-content span { padding-right: 50px; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: ${T.roseDark}; color: #fff; padding: 15px 40px; border-radius: 50px; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-weight: 500; }
+        /* NAVIGATION */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(253, 248, 244, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; transition: 0.3s; }
+        .nav-left, .nav-right { display: flex; gap: 20px; align-items: center; width: 30%; }
+        .nav-right { justify-content: flex-end; }
+        .nav-links { display: none; gap: 30px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
+        .nav-links span { cursor: pointer; transition: 0.3s; }
+        .nav-links span:hover { color: ${T.rose}; }
+        @media(min-width: 768px) { .nav-links { display: flex; } .burger { display: none; } }
+        
+        .logo { font-family: 'Bebas Neue'; font-size: 42px; letter-spacing: 6px; color: ${T.td}; cursor: pointer; text-align: center; width: 40%; }
+        .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: ${T.td}; position: relative; }
+        .badge { position: absolute; top: -5px; right: -8px; background: ${T.rose}; color: #fff; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* HERO CAROUSEL */
+        .hero-slider { height: 80vh; position: relative; overflow: hidden; }
+        .hero-slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1s ease-in-out; }
+        .hero-slide.active { opacity: 1; }
+        .hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; }
+        .hero-overlay h1 { font-family: 'Bebas Neue'; font-size: 8vw; letter-spacing: 10px; margin-bottom: 10px; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        .hero-overlay p { font-size: 20px; font-style: italic; font-family: 'Playfair Display'; margin-bottom: 30px; }
+        .slide-dots { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: 0.3s; }
+        .dot.active { background: #fff; transform: scale(1.3); }
+
+        /* PRODUCT CARDS (MARS STYLE HOVER) */
+        .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; border-bottom: 1px solid ${T.border}; padding-bottom: 15px; }
+        .section-head h2 { font-family: 'Bebas Neue'; font-size: 32px; letter-spacing: 2px; }
+        .view-all { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; font-weight: 500; transition: 0.3s; }
+        .view-all:hover { color: ${T.rose}; }
+
+        .carousel { display: flex; overflow-x: auto; gap: 30px; padding-bottom: 20px; scrollbar-width: none; }
+        .carousel::-webkit-scrollbar { display: none; }
+        .carousel .p-card { min-width: 280px; width: 280px; flex-shrink: 0; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 40px; }
+
+        .p-card { background: transparent; cursor: pointer; }
+        .p-img { height: 320px; background: ${T.nude}; position: relative; overflow: hidden; border-radius: 10px; margin-bottom: 15px; }
+        .p-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+        .p-card:hover .p-img img { transform: scale(1.08); }
+        
+        .quick-add { position: absolute; bottom: -60px; left: 0; width: 100%; padding: 10px; transition: bottom 0.3s ease; display: flex; justify-content: center; }
+        .p-card:hover .quick-add { bottom: 0; }
+        .luxe-btn-small { width: 100%; background: rgba(255,255,255,0.9); color: ${T.td}; border: none; padding: 12px; font-weight: 700; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
+        .luxe-btn-small:hover { background: ${T.td}; color: #fff; }
+
+        .p-txt { text-align: center; }
+        .p-name { font-weight: 500; font-size: 15px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .p-price { color: ${T.tm}; font-weight: 400; font-size: 16px; }
+
+        /* SHOP PAGE */
+        .shop-header { text-align: center; padding: 60px 0 40px; }
+        .shop-header h2 { font-family: 'Bebas Neue'; font-size: 48px; letter-spacing: 4px; margin-bottom: 20px; }
+        .cat-pills { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; }
+        .cat-pill { padding: 8px 20px; border: 1px solid ${T.nudeDark}; background: transparent; border-radius: 30px; cursor: pointer; transition: 0.3s; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .cat-pill.active, .cat-pill:hover { background: ${T.td}; color: #fff; border-color: ${T.td}; }
+        .shop-layout { padding: 0 5% 80px; max-width: 1600px; margin: 0 auto; }
+
+        /* BUTTONS & INPUTS */
+        .luxe-btn { background: ${T.td}; color: #fff; border: 1px solid ${T.td}; padding: 15px 40px; font-family: 'Jost'; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; font-weight: 500; font-size: 14px; }
+        .luxe-btn:hover { background: transparent; color: ${T.td}; }
+        .luxe-btn-full { width: 100%; background: ${T.td}; color: #fff; border: none; padding: 18px; font-weight: 700; font-size: 14px; letter-spacing: 2px; cursor: pointer; transition: 0.3s; }
+        .luxe-btn-full:hover { background: ${T.tm}; }
+        .luxe-input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid ${T.nudeDark}; background: transparent; font-family: 'Jost'; outline: none; }
+        .luxe-input:focus { border-color: ${T.td}; }
+
+        /* SIDE DRAWERS (Cart & Auth) */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; opacity: 0; pointer-events: none; transition: 0.4s; }
+        .overlay.show { opacity: 1; pointer-events: auto; }
+        
+        .side-drawer { position: fixed; top: 0; height: 100vh; background: ${T.bg}; z-index: 2000; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.1); }
+        .side-drawer.left { left: 0; width: 320px; transform: translateX(-100%); }
+        .side-drawer.right { right: 0; width: 400px; max-width: 100vw; transform: translateX(100%); }
+        .side-drawer.open { transform: translateX(0); }
+
+        .drawer-head { padding: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid ${T.border}; }
+        .drawer-head h3 { font-family: 'Bebas Neue'; font-size: 24px; letter-spacing: 2px; }
+        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: ${T.td}; }
+        
+        .drawer-body { flex: 1; overflow-y: auto; padding: 25px; }
+        .drawer-foot { padding: 25px; border-top: 1px solid ${T.border}; background: #fff; }
+        
+        .cart-item { display: flex; gap: 15px; margin-bottom: 25px; }
+        .cart-item img { width: 90px; height: 110px; object-fit: cover; border-radius: 5px; }
+        .cart-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .cart-info h4 { font-size: 14px; text-transform: uppercase; font-weight: 500; }
+        .cart-info p { color: ${T.tm}; }
+        .qty-ctrl { display: inline-flex; align-items: center; border: 1px solid ${T.nudeDark}; width: fit-content; }
+        .qty-ctrl button { background: none; border: none; padding: 5px 12px; cursor: pointer; font-size: 16px; }
+        .qty-ctrl span { padding: 0 10px; font-size: 14px; }
+        .rm-btn { background: none; border: none; font-size: 12px; text-transform: uppercase; color: ${T.tl}; cursor: pointer; height: fit-content; text-decoration: underline; }
+
+        .totals { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+        .shipping-msg { font-size: 12px; color: ${T.tl}; margin-bottom: 20px; text-align: center; }
+        .auth-switch { text-align: center; margin-top: 20px; font-size: 14px; text-decoration: underline; cursor: pointer; color: ${T.tm}; }
+
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: ${T.td}; color: #fff; padding: 15px 40px; border-radius: 5px; z-index: 3000; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .fade-in { animation: fadeIn 0.8s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .p-100 { padding: 150px 20px; text-align: center; font-style: italic; color: ${T.tl}; font-size: 20px; }
       `}</style>
 
-      {/* 1. OVERLAYS (Now correctly inside the return) */}
-      <div className="overlay" onClick={()=>dispatch({type:'TGL_DRAWER'})}></div>
-      <div className="drawer">
-        <h2 className="logo" style={{marginBottom: 60}} onClick={()=>dispatch({type:'GO', page:'home'})}>FACÉLOOK</h2>
-        
-        {['home', 'shop', 'cart'].map(p => (
-          <div key={p} onClick={()=>dispatch({type:'GO', page: p})} style={{padding: '20px 0', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 3, fontWeight: 700, color: state.page === p ? T.rose : T.td}}>
-            {p}
-          </div>
-        ))}
+      {/* GLOBAL OVERLAY (Dims screen when any drawer is open) */}
+      <div className={`overlay ${state.navOpen || state.cartOpen || state.authOpen ? 'show' : ''}`} onClick={()=>dispatch({type:'CLOSE_ALL'})}></div>
 
-        {/* VIP LOGIN OPTION */}
-        <div 
-          onClick={()=>dispatch({type:'GO', page: 'login'})} 
-          style={{marginTop: '40px', padding: '15px', background: T.nude, borderRadius: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '700', color: T.roseDark, border: `1px solid ${T.rose}`}}
-        >
-          LOGIN / SIGNUP
+      {/* LEFT NAVIGATION DRAWER (Mobile) */}
+      <div className={`side-drawer left ${state.navOpen ? 'open' : ''}`}>
+        <div className="drawer-head">
+          <h3 style={{fontFamily: 'Bebas Neue'}}>MENU</h3>
+          <button className="close-btn" onClick={()=>dispatch({type:'CLOSE_ALL'})}>✕</button>
+        </div>
+        <div className="drawer-body" style={{display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '18px', textTransform: 'uppercase', fontWeight: '500'}}>
+          <span onClick={()=>dispatch({type:'GO', page:'home'})} style={{cursor:'pointer', borderBottom:`1px solid ${T.border}`, paddingBottom:'15px'}}>Home</span>
+          <span onClick={()=>dispatch({type:'GO', page:'shop'})} style={{cursor:'pointer', borderBottom:`1px solid ${T.border}`, paddingBottom:'15px'}}>Shop All</span>
         </div>
       </div>
 
-      {state.toast && <div className="toast">✓ {state.toast}</div>}
+      {/* RIGHT DRAWERS */}
+      <CartDrawer />
+      <AuthDrawer />
 
-      {/* 2. NAVIGATION */}
+      {state.toast && <div className="toast">{state.toast}</div>}
+
+      {/* TOP HEADER MODULE */}
+      <Marquee />
       <nav>
-        <div onClick={()=>dispatch({type:'TGL_DRAWER'})} style={{cursor: 'pointer', fontSize: 32}}>☰</div>
+        <div className="nav-left">
+          <button className="icon-btn burger" onClick={()=>dispatch({type:'TOGGLE_NAV'})}>☰</button>
+          <div className="nav-links">
+            <span onClick={()=>dispatch({type:'GO', page:'home'})}>Home</span>
+            <span onClick={()=>dispatch({type:'GO', page:'shop'})}>Shop</span>
+          </div>
+        </div>
+        
         <div className="logo" onClick={()=>dispatch({type:'GO', page: 'home'})}>FACÉLOOK</div>
-        <div style={{fontSize: 32, cursor: 'pointer', position: 'relative'}} onClick={()=>dispatch({type:'GO', page: 'cart'})}>
-          👜 {state.cart.length > 0 && <span style={{position:'absolute', top:-5, right:-10, background:T.rose, color:'#fff', fontSize:14, borderRadius:'50%', padding:'2px 8px', fontWeight:'bold'}}>{state.cart.reduce((a,i)=>a+i.qty,0)}</span>}
+        
+        <div className="nav-right">
+          <button className="icon-btn" onClick={()=>dispatch({type:'TOGGLE_AUTH'})}>👤</button>
+          <button className="icon-btn" onClick={()=>dispatch({type:'TOGGLE_CART'})}>
+            👜 {state.cart.length > 0 && <span className="badge">{state.cart.reduce((a,i)=>a+i.qty,0)}</span>}
+          </button>
         </div>
       </nav>
 
-      {/* 3. CONTENT ENGINE */}
-      {state.loading ? <div className="p-100">CURATING LUXURY... 💄</div> : (views[state.page] || <Home/>)}
+      {/* CONTENT ENGINE */}
+      {state.loading ? <div className="p-100" style={{textAlign:'center', padding:'100px', fontSize:'20px'}}>CURATING LUXURY... 💄</div> : (state.page === 'home' ? <Home/> : <Shop/>)}
     </Ctx.Provider>
   );
 }
