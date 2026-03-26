@@ -299,7 +299,9 @@ export default function App() {
         .drop-item { padding: 12px 30px; transition: 0.3s; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; color: ${T.td}; display: block; }
         .drop-item:hover { background: ${T.nude}; color: ${T.roseDark}; padding-left: 35px; }
 
-        .logo { font-family: 'Bebas Neue'; font-size: 42px; letter-spacing: 6px; color: ${T.td}; cursor: pointer; text-align: center; width: 30%; }
+        .logo { display: flex; justify-content: center; align-items: center; width: 30%; cursor: pointer; }
+.logo img { height: 45px; object-fit: contain; transition: transform 0.4s ease; }
+.logo img:hover { transform: scale(1.05); }
         .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: ${T.td}; position: relative; }
         .badge { position: absolute; top: -5px; right: -8px; background: ${T.rose}; color: #fff; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
