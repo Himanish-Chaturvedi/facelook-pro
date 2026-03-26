@@ -83,8 +83,8 @@ const Home = () => {
         <div className="hero-img">💄</div>
       </div>
       <div className="section">
-        <div className="section-head"><h2>Trending</h2><span onClick={()=>d({type:'GO', page:'shop'})}>View All →</span></div>
-        <div className="carousel">{s.products.map(p => <PCard key={p._id} p={p} />)}</div>
+        <div className="section-head"><h2>Trending</h2><span onClick={()=>d({type:'GO', page:'shop'})} style={{cursor:'pointer'}}>View All →</span></div>
+        <div className="carousel">{s.products.slice(0,6).map(p => <PCard key={p._id} p={p} />)}</div>
       </div>
     </div>
   );
@@ -100,7 +100,9 @@ const Shop = () => {
         <h3>Boutique</h3>
         {CATS.map(c => <div key={c} onClick={()=>setCat(c)} className={`side-item ${cat === c ? 'active' : ''}`}>{c}</div>)}
       </aside>
-      <main className="grid">{filtered.map(p => <PCard key={p._id} p={p} />)}</main>
+      <main className="grid">
+        {filtered.length > 0 ? filtered.map(p => <PCard key={p._id} p={p} />) : <div className="p-100">No products found.</div>}
+      </main>
     </div>
   );
 };
@@ -121,23 +123,23 @@ const Cart = () => {
           </div>
         </div>
       ))}
-      <div className="total" style={{textAlign: 'right', fontSize: '24px', fontWeight: '700', marginTop: '30px', color: T.td}}>Total: ₹{total}</div>
+      <div className="total" style={{textAlign: 'right', fontSize: '24px', fontWeight: '700', marginTop: '30px'}}>Total: ₹{total}</div>
     </div>
   );
 };
 
 const Login = () => {
-    const {dispatch:d} = useContext(Ctx);
-    return (
-      <div className="fade-in" style={{padding: '100px 20px', textAlign: 'center'}}>
-        <div style={{maxWidth: '400px', margin: '0 auto', background: '#fff', padding: '40px', borderRadius: '30px', boxShadow: T.shadow}}>
-            <h2 style={{fontFamily: 'Playfair Display', marginBottom: '20px'}}>Sign In</h2>
-            <input type="email" placeholder="Email" style={{width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`}} />
-            <input type="password" placeholder="Password" style={{width: '100%', padding: '15px', marginBottom: '20px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`}} />
-            <button className="luxe-btn" style={{width: '100%'}} onClick={() => d({type: 'LOGIN', user: {name: 'Guest'}})}>Enter Boutique</button>
-        </div>
+  const {dispatch:d} = useContext(Ctx);
+  return (
+    <div className="fade-in" style={{padding: '100px 20px', textAlign: 'center'}}>
+      <div style={{maxWidth: '400px', margin: '0 auto', background: '#fff', padding: '40px', borderRadius: '30px', boxShadow: T.shadow}}>
+          <h2 style={{fontFamily: 'Playfair Display', marginBottom: '20px'}}>Sign In</h2>
+          <input type="email" placeholder="Email" style={{width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`}} />
+          <input type="password" placeholder="Password" style={{width: '100%', padding: '15px', marginBottom: '20px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`}} />
+          <button className="luxe-btn" style={{width: '100%'}} onClick={() => d({type: 'LOGIN', user: {name: 'Guest'}})}>Enter Boutique</button>
       </div>
-    );
+    </div>
+  );
 };
 
 // ═══════════════════════════════════════════
@@ -154,7 +156,6 @@ export default function App() {
       .catch(() => dispatch({ type: 'SET_PRODUCTS', payload: [] }));
   }, []);
 
-  // Fixed the Toast auto-clear logic
   useEffect(() => {
     if (state.toast) {
       const t = setTimeout(() => dispatch({type: 'TOAST_CLR'}), 2000);
@@ -162,6 +163,7 @@ export default function App() {
     }
   }, [state.toast]);
 
+  // ENGINE: This object maps the 'state.page' string to the actual React component
   const views = { 
     home: <Home/>, 
     shop: <Shop/>, 
