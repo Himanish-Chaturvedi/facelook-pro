@@ -11,16 +11,23 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("❌ DB Error:", err));
 
-  
+
+// Add localhost for testing, and ensure your EXACT Vercel link is here
+// Do NOT put a trailing slash (/) at the end of these URLs!
 const allowedOrigins = [
-  'https://facelook-pro.vercel.app',
-  'https://facelook-pro-njx2.vercel.app'
+  'https://facelook-pro.vercel.app', 
+  'http://localhost:3000',
+  'http://localhost:5173'
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
+    // Log the origin so we can see what is being blocked in the Render dashboard
+    console.log("Request coming from Origin:", origin); 
+    
+    // Allow requests with no origin (like mobile apps or Postman)
     if (!origin) return callback(null, true);
+    
     if (allowedOrigins.indexOf(origin) === -1) {
       return callback(new Error('CORS policy block'), false);
     }
