@@ -18,6 +18,7 @@ const Ctx = createContext();
 // ═══════════════════════════════════════════
 const init = { 
   page: 'home', 
+  currentCat: 'All', // NEW: Category state is now global
   cart: JSON.parse(localStorage.getItem('facelook_cart')) || [], 
   products: [], 
   loading: true, 
@@ -30,8 +31,11 @@ const init = {
 function reducer(s, a) {
   switch(a.type) {
     case 'SET_PRODUCTS': return { ...s, products: a.payload, loading: false };
-    case 'GO': return { ...s, page: a.page, navOpen: false, cartOpen: false, authOpen: false };
+    case 'GO': return { ...s, page: a.page, currentCat: 'All', navOpen: false, cartOpen: false, authOpen: false };
     
+    // NEW: Handles navigating specifically to a category from the dropdown
+    case 'SET_CAT': return { ...s, page: 'shop', currentCat: a.cat, navOpen: false, cartOpen: false, authOpen: false };
+
     // Drawer Controls
     case 'TOGGLE_NAV': return { ...s, navOpen: !s.navOpen, cartOpen: false, authOpen: false };
     case 'TOGGLE_CART': return { ...s, cartOpen: !s.cartOpen, navOpen: false, authOpen: false };
@@ -43,7 +47,6 @@ function reducer(s, a) {
       const ex = s.cart.find(i=>i._id===a.p._id);
       const newCart = ex ? s.cart.map(i=>i._id===a.p._id?{...i,qty:i.qty+1}:i) : [...s.cart,{...a.p,qty:1}];
       localStorage.setItem('facelook_cart', JSON.stringify(newCart));
-      // Automatically open cart drawer like MARS does
       return { ...s, cart: newCart, cartOpen: true }; 
     }
     case 'CART_QTY': {
@@ -81,7 +84,6 @@ const PCard = ({ p }) => {
     <div className="p-card group">
       <div className="p-img">
         <img src={p.image || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400'} alt={p.name} />
-        {/* MARS Style Quick Add Overlay */}
         <div className="quick-add">
           <button className="luxe-btn-small" onClick={(e)=> { e.stopPropagation(); d({type:'CART_ADD', p}); }}>ADD TO BAG - ₹{p.price}</button>
         </div>
@@ -144,18 +146,25 @@ const Home = () => {
 };
 
 const Shop = () => {
-  const {state:s} = useContext(Ctx);
-  const [cat, setCat] = useState('All');
+  const {state:s, dispatch:d} = useContext(Ctx);
+  const [search, setSearch] = useState('');
   
-  const filtered = s.products.filter(p => cat === 'All' || p.category === cat);
+  // NEW: Filtering logic now uses the global state 'currentCat'
+  const filtered = s.products.filter(p => 
+    (s.currentCat === 'All' || p.category === s.currentCat) && 
+    (p.name.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
     <div className="shop-layout fade-in">
       <div className="shop-header">
-        <h2>{cat === 'All' ? 'All Products' : cat}</h2>
+        <h2>{s.currentCat === 'All' ? 'All Products' : s.currentCat}</h2>
         <div className="cat-pills">
-          {CATS.map(c => <button key={c} onClick={()=>setCat(c)} className={`cat-pill ${cat === c ? 'active' : ''}`}>{c}</button>)}
+          {CATS.map(c => <button key={c} onClick={()=>d({type:'SET_CAT', cat: c})} className={`cat-pill ${s.currentCat === c ? 'active' : ''}`}>{c}</button>)}
         </div>
+      </div>
+      <div style={{maxWidth: '400px', margin: '0 auto 40px'}}>
+        <input type="text" placeholder="Search collection..." className="luxe-input" onChange={(e)=>setSearch(e.target.value)} />
       </div>
       <main className="grid">
         {filtered.length > 0 ? filtered.map(p => <PCard key={p._id} p={p} />) : <div className="p-100">No products found.</div>}
@@ -269,16 +278,25 @@ export default function App() {
         .marquee-content span { padding-right: 50px; }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        /* NAVIGATION */
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(253, 248, 244, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; transition: 0.3s; }
-        .nav-left, .nav-right { display: flex; gap: 20px; align-items: center; width: 30%; }
+        /* NAVIGATION & HOVER DROPDOWN */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 0 5%; background: rgba(253, 248, 244, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; transition: 0.3s; height: 75px; }
+        .nav-left, .nav-right { display: flex; gap: 20px; align-items: center; width: 35%; height: 100%; }
         .nav-right { justify-content: flex-end; }
-        .nav-links { display: none; gap: 30px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
-        .nav-links span { cursor: pointer; transition: 0.3s; }
-        .nav-links span:hover { color: ${T.rose}; }
+        .nav-links { display: none; gap: 30px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; align-items: center; height: 100%; }
+        .nav-links > span { cursor: pointer; transition: 0.3s; display: flex; align-items: center; height: 100%; }
+        .nav-links > span:hover { color: ${T.rose}; }
         @media(min-width: 768px) { .nav-links { display: flex; } .burger { display: none; } }
         
-        .logo { font-family: 'Bebas Neue'; font-size: 42px; letter-spacing: 6px; color: ${T.td}; cursor: pointer; text-align: center; width: 40%; }
+        /* NEW: Hover Menu CSS */
+        .dropdown-wrap { position: relative; display: flex; align-items: center; height: 100%; cursor: pointer; }
+        .dropdown-trigger { display: flex; align-items: center; transition: 0.3s; }
+        .dropdown-wrap:hover .dropdown-trigger { color: ${T.rose}; }
+        .dropdown-menu { position: absolute; top: 100%; left: -20px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); min-width: 220px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); border: 1px solid ${T.border}; opacity: 0; visibility: hidden; transform: translateY(15px); transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); z-index: 2000; padding: 15px 0; border-radius: 0 0 15px 15px; }
+        .dropdown-wrap:hover .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .drop-item { padding: 12px 30px; transition: 0.3s; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; color: ${T.td}; display: block; }
+        .drop-item:hover { background: ${T.nude}; color: ${T.roseDark}; padding-left: 35px; }
+
+        .logo { font-family: 'Bebas Neue'; font-size: 42px; letter-spacing: 6px; color: ${T.td}; cursor: pointer; text-align: center; width: 30%; }
         .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: ${T.td}; position: relative; }
         .badge { position: absolute; top: -5px; right: -8px; background: ${T.rose}; color: #fff; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
@@ -293,7 +311,7 @@ export default function App() {
         .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: 0.3s; }
         .dot.active { background: #fff; transform: scale(1.3); }
 
-        /* PRODUCT CARDS (MARS STYLE HOVER) */
+        /* PRODUCT CARDS */
         .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; border-bottom: 1px solid ${T.border}; padding-bottom: 15px; }
         .section-head h2 { font-family: 'Bebas Neue'; font-size: 32px; letter-spacing: 2px; }
         .view-all { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; font-weight: 500; transition: 0.3s; }
@@ -332,10 +350,10 @@ export default function App() {
         .luxe-btn:hover { background: transparent; color: ${T.td}; }
         .luxe-btn-full { width: 100%; background: ${T.td}; color: #fff; border: none; padding: 18px; font-weight: 700; font-size: 14px; letter-spacing: 2px; cursor: pointer; transition: 0.3s; }
         .luxe-btn-full:hover { background: ${T.tm}; }
-        .luxe-input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid ${T.nudeDark}; background: transparent; font-family: 'Jost'; outline: none; }
+        .luxe-input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid ${T.nudeDark}; background: transparent; font-family: 'Jost'; outline: none; border-radius: 8px; }
         .luxe-input:focus { border-color: ${T.td}; }
 
-        /* SIDE DRAWERS (Cart & Auth) */
+        /* SIDE DRAWERS */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; opacity: 0; pointer-events: none; transition: 0.4s; }
         .overlay.show { opacity: 1; pointer-events: auto; }
         
@@ -370,10 +388,10 @@ export default function App() {
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      {/* GLOBAL OVERLAY (Dims screen when any drawer is open) */}
+      {/* GLOBAL OVERLAY */}
       <div className={`overlay ${state.navOpen || state.cartOpen || state.authOpen ? 'show' : ''}`} onClick={()=>dispatch({type:'CLOSE_ALL'})}></div>
 
-      {/* LEFT NAVIGATION DRAWER (Mobile) */}
+      {/* LEFT NAVIGATION DRAWER (Mobile & Expanded Menu) */}
       <div className={`side-drawer left ${state.navOpen ? 'open' : ''}`}>
         <div className="drawer-head">
           <h3 style={{fontFamily: 'Bebas Neue'}}>MENU</h3>
@@ -382,6 +400,13 @@ export default function App() {
         <div className="drawer-body" style={{display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '18px', textTransform: 'uppercase', fontWeight: '500'}}>
           <span onClick={()=>dispatch({type:'GO', page:'home'})} style={{cursor:'pointer', borderBottom:`1px solid ${T.border}`, paddingBottom:'15px'}}>Home</span>
           <span onClick={()=>dispatch({type:'GO', page:'shop'})} style={{cursor:'pointer', borderBottom:`1px solid ${T.border}`, paddingBottom:'15px'}}>Shop All</span>
+          
+          <div style={{marginTop: '10px', fontSize: '12px', color: T.tm, letterSpacing: '2px', paddingBottom: '5px'}}>CATEGORIES</div>
+          {CATS.map(c => (
+            <span key={c} onClick={()=>dispatch({type:'SET_CAT', cat: c})} style={{cursor:'pointer', fontSize: '15px', color: state.currentCat === c ? T.rose : T.td, paddingLeft: '10px'}}>
+              ↳ {c}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -399,6 +424,19 @@ export default function App() {
           <div className="nav-links">
             <span onClick={()=>dispatch({type:'GO', page:'home'})}>Home</span>
             <span onClick={()=>dispatch({type:'GO', page:'shop'})}>Shop</span>
+            
+            {/* NEW: THE HOVER CATEGORY DROPDOWN */}
+            <div className="dropdown-wrap">
+              <span className="dropdown-trigger">Categories <span style={{fontSize: '10px', marginLeft: '4px'}}>▼</span></span>
+              <div className="dropdown-menu">
+                {CATS.map(c => (
+                  <div key={c} className="drop-item" onClick={()=>dispatch({type:'SET_CAT', cat: c})}>
+                    {c}
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
         
