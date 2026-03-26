@@ -1,36 +1,29 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
+require('dotenv').config();
 const connectDB = require('./config/db');
-const productRoutes = require('./routes/productRoutes');
-const paymentRoutes = require('./routes/paymentRoutes'); 
-
-dotenv.config();
-connectDB();
+const Product = require('./models/Product'); // Ensure this model exists
 
 const app = express();
+connectDB();
 
-// ═══════════════════════════════════════════
-// THE CORS HANDSHAKE (No trailing slash)
-// ═══════════════════════════════════════════
-app.use(cors({
-  origin: 'https://facelook-pro-njx2.vercel.app', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
-
+app.use(cors({ origin: 'https://facelook-pro-njx2.vercel.app' }));
 app.use(express.json());
 
-// API Routes
-app.use('/api/products', productRoutes);
-app.use('/api/payment', paymentRoutes); 
-
-// Health Check for Debugging
+// 1. THE HEALTH CHECK (Test this first!)
 app.get('/api/health', (req, res) => {
   res.json({ message: 'FACÉLOOK Backend Engine is running perfectly! 🚀' });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// 2. THE PRODUCT ROUTE
+app.get('/api/products', async (req, res) => {
+  try {
+    const products = await Product.find({});
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
