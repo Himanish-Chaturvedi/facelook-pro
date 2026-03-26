@@ -138,8 +138,12 @@ export default function App() {
       .catch(() => dispatch({ type: 'SET_PRODUCTS', payload: [] }));
   }, []);
 
-  const views = { home: <Home/>, shop: <Shop/>, cart: <Cart/>, login: <div className="p-100">Login Form Here</div> };
-
+const views = { 
+  home: <Home/>, 
+  shop: <Shop/>, // Changed from placeholder text to the Shop component
+  cart: <div className="p-100">Your Luxury Bag is Empty.</div>,
+  login: <Login/>
+};
   return (
     <Ctx.Provider value={{state, dispatch}}>
       <style>{`
