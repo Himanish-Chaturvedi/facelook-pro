@@ -74,18 +74,17 @@ const Home = () => {
   const {state:s, dispatch:d} = useContext(Ctx);
   return (
     <div className="fade-in">
-      <div className="promo">✦ THE ROYAL COLLECTION 2026: 30% OFF | CODE: QUEEN30 ✦</div>
-      <div className="hero">
-        <div className="hero-content">
-          <h1>FACÉLOOK</h1>
-          <p>Luxury cosmetics for the modern queen.</p>
-          <button className="luxe-btn" onClick={()=>d({type:'GO', page:'shop'})}>SHOP NOW</button>
+      {/* ... Hero Section ... */}
+      <div className="section" style={{padding: '60px 20px'}}>
+        <div className="section-head" style={{display:'flex', justifyContent:'space-between', alignItems:'center', maxWidth:'1200px', margin:'0 auto'}}>
+          <h2 style={{fontFamily:'Playfair Display', fontSize:'32px'}}>Trending Now</h2>
+          <span onClick={()=>d({type:'GO', page:'shop'})} style={{cursor:'pointer', color:T.rose, fontWeight:'bold'}}>View All →</span>
         </div>
-        <div className="hero-img">💄</div>
-      </div>
-      <div className="section">
-        <div className="section-head"><h2>Trending</h2><span onClick={()=>d({type:'GO', page:'shop'})} style={{cursor:'pointer'}}>View All →</span></div>
-        <div className="carousel">{s.products.slice(0,6).map(p => <PCard key={p._id} p={p} />)}</div>
+        
+        {/* We use .slice(0, 4) to only show the top 4 items on the landing page */}
+        <div className="carousel" style={{maxWidth:'1200px', margin:'0 auto'}}>
+          {s.products.slice(0, 4).map(p => <PCard key={p._id} p={p} />)}
+        </div>
       </div>
     </div>
   );
@@ -175,41 +174,74 @@ export default function App() {
   return (
     <Ctx.Provider value={{state, dispatch}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital@0;1&family=Jost:wght@300;500;700&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Jost', sans-serif; background: ${T.bg}; overflow-x: hidden; }
-        
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 25px; background: rgba(245, 237, 229, 0.85); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; }
-        .logo { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 6px; color: ${T.rose}; cursor: pointer; }
-        
-        .drawer { position: fixed; top: 0; left: ${state.drawer ? '0' : '-350px'}; width: 320px; height: 100%; background: ${T.card}; z-index: 1100; transition: 0.5s ease; padding: 80px 40px; box-shadow: 20px 0 50px rgba(0,0,0,0.1); }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1050; display: ${state.drawer ? 'block' : 'none'}; }
+        /* ═══════════════════════════════════════════
+   FINAL CLEANUP STYLE BLOCK
+   ═══════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital@0;1&family=Jost:wght@300;500;700&display=swap');
 
-        .hero { min-height: 80vh; display: flex; align-items: center; padding: 60px; text-align: center; flex-direction: column; background: linear-gradient(135deg, ${T.nudeMid}, #fff); }
-        .hero h1 { font-family: 'Bebas Neue'; font-size: 100px; color: ${T.roseDark}; }
-        @media (min-width: 1024px) { .hero { flex-direction: row; text-align: left; padding: 0 100px; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Jost', sans-serif; background: ${T.bg}; overflow-x: hidden; }
 
-        .luxe-btn { background: ${T.rose}; color: #fff; border: none; padding: 18px 45px; font-family: 'Bebas Neue'; letter-spacing: 3px; cursor: pointer; border-radius: 60px; margin-top: 20px; transition: 0.3s; }
-        .luxe-btn:hover { background: ${T.roseDark}; transform: translateY(-3px); }
-        
-        .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 30px; }
-        .p-card { background: ${T.card}; border-radius: 30px; overflow: hidden; box-shadow: ${T.shadow}; position: relative; transition: 0.3s; }
-        .p-img img { width: 100%; height: 280px; object-fit: cover; }
-        .p-add { position: absolute; right: 20px; bottom: 20px; width: 40px; height: 40px; border-radius: 50%; border: none; background: ${T.rose}; color: #fff; font-size: 24px; cursor: pointer; }
+/* 1. THE CAROUSEL (Landing Page) */
+.carousel { 
+  display: flex; 
+  overflow-x: auto; 
+  gap: 20px; 
+  padding: 20px; 
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+.carousel::-webkit-scrollbar { display: none; }
+.carousel .p-card { min-width: 280px; flex-shrink: 0; }
 
-        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid ${T.nudeDark}; margin-bottom: 20px; font-family: 'Jost'; }
-        
-        .cart-page { max-width: 800px; margin: 40px auto; padding: 20px; }
-        .cart-item { display: flex; align-items: center; background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: ${T.shadow}; gap: 20px; }
-        .cart-item img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; }
-        .qty-ctrl { display: flex; align-items: center; gap: 15px; background: ${T.bg}; padding: 5px 15px; border-radius: 50px; }
-        .qty-ctrl button { background: none; border: none; font-size: 20px; cursor: pointer; }
-        .rm-btn { background: none; border: none; color: ${T.tl}; cursor: pointer; font-size: 18px; }
+/* 2. THE SHOP GRID */
+.grid { 
+  flex: 1; 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+  gap: 30px; 
+}
 
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: ${T.roseDark}; color: #fff; padding: 12px 30px; border-radius: 50px; z-index: 2000; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { bottom: -50px; opacity: 0; } to { bottom: 30px; opacity: 1; } }
-        .fade-in { animation: fadeIn 0.8s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* 3. PRODUCT CARDS & IMAGES */
+.p-card { 
+  background: ${T.card}; 
+  border-radius: 30px; 
+  overflow: hidden; 
+  box-shadow: ${T.shadow}; 
+  position: relative; 
+  transition: 0.3s; 
+}
+.p-card:hover { transform: translateY(-10px); }
+
+.p-img { 
+  height: 250px; 
+  width: 100%;
+  background: ${T.nude};
+  overflow: hidden;
+}
+.p-img img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  transition: 0.5s ease;
+}
+.p-card:hover .p-img img { transform: scale(1.1); }
+
+/* 4. UI ELEMENTS */
+nav { display: flex; justify-content: space-between; align-items: center; padding: 25px; background: rgba(245, 237, 229, 0.85); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; }
+.logo { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 6px; color: ${T.rose}; cursor: pointer; }
+.luxe-btn { background: ${T.rose}; color: #fff; border: none; padding: 18px 45px; font-family: 'Bebas Neue'; letter-spacing: 3px; cursor: pointer; border-radius: 60px; margin-top: 20px; transition: 0.3s; }
+.p-add { position: absolute; right: 20px; bottom: 20px; width: 40px; height: 40px; border-radius: 50%; border: none; background: ${T.rose}; color: #fff; font-size: 24px; cursor: pointer; }
+
+/* 5. SHOP & CART LAYOUTS */
+.shop-layout { display: flex; padding: 40px; gap: 40px; max-width: 1400px; margin: 0 auto; }
+.sidebar { width: 250px; display: none; }
+@media (min-width: 1024px) { .sidebar { display: block; } }
+.search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid ${T.nudeDark}; margin-bottom: 20px; }
+
+.cart-page { max-width: 800px; margin: 40px auto; padding: 20px; }
+.cart-item { display: flex; align-items: center; background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: ${T.shadow}; gap: 20px; }
+.cart-item img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; }
       `}</style>
 
       {state.toast && <div className="toast">✓ {state.toast}</div>}
