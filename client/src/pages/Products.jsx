@@ -7,19 +7,33 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch('https://www.google.com/search?q=https://facelook-pro-1.onrender.com/api/products')
-      .then(res => res.json())
-      .then(data => { setProducts(data); setLoading(false); })
-      .catch(() => setLoading(false));
+useEffect(() => {
+    // REMOVED the Google search prefix. Using the direct Render URL.
+    fetch('https://facelook-pro.onrender.com/api/products') 
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(data => { 
+        setProducts(data); 
+        setLoading(false); 
+      })
+      .catch((error) => {
+        console.error("Fetch error:", error);
+        setLoading(false);
+      });
   }, []);
-
   const filtered = products.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.shade.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) return <div style={{textAlign:'center', padding:'100px'}}>Loading...</div>;
+
+
+  if (!loading && filtered.length === 0) {
+  return <div style={{textAlign:'center', padding:'100px'}}>No matching shades found.</div>;
+}
 
   return (
     <div style={{ padding: '40px 20px' }}>
