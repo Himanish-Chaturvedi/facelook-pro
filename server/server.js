@@ -11,8 +11,8 @@ connectDB();
 const app = express();
 
 app.use(cors({
-  origin: 'https://facelook-pro-njx2.vercel.app/', // Your Vercel link
-  methods: ['GET', 'POST'],
+  origin: 'https://facelook-pro-njx2.vercel.app', // REMOVED THE LAST /
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],     // Added PUT/DELETE for full functionality
   credentials: true
 }));
 
