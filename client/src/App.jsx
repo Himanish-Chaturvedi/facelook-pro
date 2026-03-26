@@ -149,6 +149,35 @@ const Cart = () => {
   );
 };
 
+const Auth = () => {
+  const {dispatch:d} = useContext(Ctx);
+  const [isLogin, setIsLogin] = useState(true);
+  
+  return (
+    <div className="fade-in" style={{padding: '80px 20px', textAlign: 'center'}}>
+      <div style={{maxWidth: '400px', margin: '0 auto', background: '#fff', padding: '40px', borderRadius: '30px', boxShadow: T.shadow}}>
+          <h2 style={{fontFamily: 'Playfair Display', marginBottom: '10px'}}>{isLogin ? 'Welcome Back' : 'Join the Elite'}</h2>
+          <p style={{color: T.tl, marginBottom: '30px', fontSize: '14px'}}>Access your royal collection and orders.</p>
+          
+          <input type="email" placeholder="Email Address" style={{width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`, outline: 'none'}} />
+          {!isLogin && <input type="text" placeholder="Full Name" style={{width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`, outline: 'none'}} />}
+          <input type="password" placeholder="Password" style={{width: '100%', padding: '15px', marginBottom: '20px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`, outline: 'none'}} />
+          
+          <button className="luxe-btn" style={{width: '100%'}} onClick={() => { d({type: 'TOAST', msg: isLogin ? 'Welcome, Queen!' : 'Account Created!'}); d({type: 'GO', page: 'home'}); }}>
+            {isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'}
+          </button>
+          
+          <p style={{marginTop: '20px', fontSize: '14px', color: T.tm}}>
+            {isLogin ? "New to FACÉLOOK?" : "Already a member?"} 
+            <span onClick={() => setIsLogin(!isLogin)} style={{color: T.rose, cursor: 'pointer', marginLeft: '5px', fontWeight: '700'}}>
+              {isLogin ? 'Sign Up' : 'Login'}
+            </span>
+          </p>
+      </div>
+    </div>
+  );
+};
+
 // ═══════════════════════════════════════════
 // MAIN APP COMPONENT
 // ═══════════════════════════════════════════
@@ -170,8 +199,33 @@ export default function App() {
     }
   }, [state.toast]);
 
-  const views = { home: <Home/>, shop: <Shop/>, cart: <Cart/>, login: <div className="p-100">Account Coming Soon...</div> };
+  // Inside App()
+const views = { 
+  home: <Home/>, 
+  shop: <Shop/>, 
+  cart: <Cart/>, 
+  login: <Auth/> // Pointing to the new Auth component
+};
 
+// Inside the Drawer return
+<div className="drawer">
+  <h2 className="logo" style={{marginBottom: 60}} onClick={()=>dispatch({type:'GO', page:'home'})}>FACÉLOOK</h2>
+  
+  {/* Standard Links */}
+  {['home', 'shop', 'cart'].map(p => (
+    <div key={p} onClick={()=>dispatch({type:'GO', page: p})} style={{padding: '20px 0', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 3, fontWeight: 700, color: state.page === p ? T.rose : T.td}}>
+      {p}
+    </div>
+  ))}
+
+  {/* NEW: Dedicated Login/Signup Button in Drawer */}
+  <div 
+    onClick={()=>dispatch({type:'GO', page: 'login'})} 
+    style={{marginTop: '40px', padding: '15px', background: T.nude, borderRadius: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '700', color: T.roseDark, border: `1px solid ${T.rose}`}}
+  >
+    LOGIN / SIGNUP
+  </div>
+</div>
   return (
     <Ctx.Provider value={{state, dispatch}}>
       <style>{`
