@@ -110,18 +110,34 @@ const Cart = () => {
   const total = s.cart.reduce((a,i)=>a+i.price*i.qty,0);
   if(s.cart.length===0) return <div className="p-100">Your Bag is Empty.</div>;
   return (
-    <div className="cart-page fade-in">
-      <h2>Shopping Bag</h2>
+    <div className="cart-page fade-in" style={{padding: '40px 20px', maxWidth: '800px', margin: '0 auto'}}>
+      <h2 style={{fontFamily: 'Playfair Display', fontStyle: 'italic', marginBottom: '30px'}}>Your Shopping Bag</h2>
       {s.cart.map(item => (
-        <div key={item._id} className="cart-item">
+        <div key={item._id} className="cart-item" style={{display: 'flex', justifyContent: 'space-between', padding: '20px', background: '#fff', borderRadius: '15px', marginBottom: '15px', boxShadow: T.shadow}}>
           <span>{item.name} (x{item.qty})</span>
-          <span>₹{item.price * item.qty}</span>
-          <button onClick={()=>d({type:'CART_RM', id:item._id})}>🗑️</button>
+          <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
+            <span style={{fontWeight: '700', color: T.roseDark}}>₹{item.price * item.qty}</span>
+            <button style={{background: 'none', border: 'none', cursor: 'pointer'}} onClick={()=>d({type:'CART_RM', id:item._id})}>🗑️</button>
+          </div>
         </div>
       ))}
-      <div className="total">Total: ₹{total}</div>
+      <div className="total" style={{textAlign: 'right', fontSize: '24px', fontWeight: '700', marginTop: '30px', color: T.td}}>Total: ₹{total}</div>
     </div>
   );
+};
+
+const Login = () => {
+    const {dispatch:d} = useContext(Ctx);
+    return (
+      <div className="fade-in" style={{padding: '100px 20px', textAlign: 'center'}}>
+        <div style={{maxWidth: '400px', margin: '0 auto', background: '#fff', padding: '40px', borderRadius: '30px', boxShadow: T.shadow}}>
+            <h2 style={{fontFamily: 'Playfair Display', marginBottom: '20px'}}>Sign In</h2>
+            <input type="email" placeholder="Email" style={{width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`}} />
+            <input type="password" placeholder="Password" style={{width: '100%', padding: '15px', marginBottom: '20px', borderRadius: '10px', border: `1px solid ${T.nudeDark}`}} />
+            <button className="luxe-btn" style={{width: '100%'}} onClick={() => d({type: 'LOGIN', user: {name: 'Guest'}})}>Enter Boutique</button>
+        </div>
+      </div>
+    );
 };
 
 // ═══════════════════════════════════════════
@@ -138,12 +154,21 @@ export default function App() {
       .catch(() => dispatch({ type: 'SET_PRODUCTS', payload: [] }));
   }, []);
 
-const views = { 
-  home: <Home/>, 
-  shop: <Shop/>, // Changed from placeholder text to the Shop component
-  cart: <div className="p-100">Your Luxury Bag is Empty.</div>,
-  login: <Login/>
-};
+  // Fixed the Toast auto-clear logic
+  useEffect(() => {
+    if (state.toast) {
+      const t = setTimeout(() => dispatch({type: 'TOAST_CLR'}), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [state.toast]);
+
+  const views = { 
+    home: <Home/>, 
+    shop: <Shop/>, 
+    cart: <Cart/>,
+    login: <Login/>
+  };
+
   return (
     <Ctx.Provider value={{state, dispatch}}>
       <style>{`
@@ -161,27 +186,35 @@ const views = {
         .hero h1 { font-family: 'Bebas Neue'; font-size: clamp(80px, 15vw, 150px); color: ${T.roseDark}; }
         @media (min-width: 1024px) { .hero { flex-direction: row; text-align: left; padding: 0 100px; } }
 
-        .luxe-btn { background: ${T.rose}; color: #fff; border: none; padding: 20px 50px; font-family: 'Bebas Neue'; letter-spacing: 3px; cursor: pointer; border-radius: 60px; margin-top: 20px; }
+        .luxe-btn { background: ${T.rose}; color: #fff; border: none; padding: 20px 50px; font-family: 'Bebas Neue'; letter-spacing: 3px; cursor: pointer; border-radius: 60px; margin-top: 20px; transition: 0.3s; }
+        .luxe-btn:hover { background: ${T.roseDark}; transform: scale(1.05); }
         
-        .carousel { display: flex; overflow-x: auto; gap: 30px; padding: 40px 20px; }
-        .p-card { min-width: 250px; background: ${T.card}; border-radius: 30px; overflow: hidden; box-shadow: ${T.shadow}; position: relative; }
+        .carousel { display: flex; overflow-x: auto; gap: 30px; padding: 40px 20px; scrollbar-width: none; }
+        .p-card { min-width: 250px; background: ${T.card}; border-radius: 30px; overflow: hidden; box-shadow: ${T.shadow}; position: relative; transition: 0.3s; }
+        .p-card:hover { transform: translateY(-10px); }
         .p-img { height: 280px; background: ${T.nude}; }
         .p-img img { width: 100%; height: 100%; object-fit: cover; }
         .p-txt { padding: 20px; }
+        .p-name { font-weight: 700; margin-bottom: 5px; }
+        .p-price { color: ${T.roseDark}; font-weight: 700; }
         .p-add { position: absolute; right: 20px; bottom: 20px; width: 40px; height: 40px; border-radius: 50%; border: none; background: ${T.rose}; color: #fff; font-size: 24px; cursor: pointer; }
 
         .shop-layout { display: flex; padding: 40px; gap: 60px; max-width: 1440px; margin: 0 auto; }
         .sidebar { width: 200px; display: none; }
         @media (min-width: 1024px) { .sidebar { display: block; } }
-        .side-item { padding: 15px; cursor: pointer; border-radius: 12px; }
+        .side-item { padding: 15px; cursor: pointer; border-radius: 12px; transition: 0.3s; }
         .side-item.active { background: ${T.rose}; color: #fff; }
         .grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; }
 
         .fade-in { animation: fadeIn 0.8s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .p-100 { padding: 150px; text-align: center; }
+        .p-100 { padding: 150px; text-align: center; font-style: italic; color: ${T.tl}; }
+        
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: ${T.roseDark}; color: #fff; padding: 12px 30px; border-radius: 50px; z-index: 2000; box-shadow: 0 5px 20px rgba(0,0,0,0.2); animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { bottom: -50px; opacity: 0; } to { bottom: 30px; opacity: 1; } }
       `}</style>
 
+      {state.toast && <div className="toast">✓ {state.toast}</div>}
       <div className="overlay" onClick={()=>dispatch({type:'TGL_DRAWER'})}></div>
       <div className="drawer">
         <h2 className="logo" style={{marginBottom: 60}}>FACÉLOOK</h2>
