@@ -13,6 +13,9 @@ const T = {
 const CATS = ['All','Lips','Eyes','Face','Nails'];
 const Ctx = createContext();
 
+// Add your logo link here! (Can be an imgur link, cloudinary, or a local file path like '/logo.png')
+const MY_LOGO = "D:\\Facelook-Project\\facelook.png";
+
 // ═══════════════════════════════════════════
 // ENGINE: DRAWER-BASED REDUCER
 // ═══════════════════════════════════════════
