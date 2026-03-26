@@ -12,11 +12,11 @@ const Navbar = () => {
         
         {/* 👑 FIXED LOGO SECTION */}
         <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-          <img 
-            src="D:\Facelook-Project\client\public\facelook.png" /* ⬅️ Just the forward slash and the file name! */
-            alt="D:\Facelook-Project\client\public\facelook.png" 
-            style={{ height: '40px', objectFit: 'contain', cursor: 'pointer' }}
-          />
+  <img 
+    src="/facelook.png" /* ⬅️ This is the magic web path! */
+    alt="FACÉLOOK Logo" 
+    style={{ height: '40px', objectFit: 'contain', cursor: 'pointer' }}
+  />
         </Link>
         
         <div className="nav-menu">
