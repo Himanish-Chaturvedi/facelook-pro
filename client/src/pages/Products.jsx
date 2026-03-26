@@ -8,7 +8,7 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    fetch('https://www.google.com/search?q=https://facelook-pro-1.onrender.com/api/products')
       .then(res => res.json())
       .then(data => { setProducts(data); setLoading(false); })
       .catch(() => setLoading(false));

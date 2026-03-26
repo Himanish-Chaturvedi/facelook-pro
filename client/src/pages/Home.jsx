@@ -13,7 +13,7 @@ const Home = () => {
 
   // Fetch only 4 best sellers for the home page
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    fetch('https://www.google.com/search?q=https://facelook-pro-1.onrender.com/api/products')
       .then(res => res.json())
       .then(data => setFeatured(data.slice(0, 4)));
   }, []);
