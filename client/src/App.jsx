@@ -82,12 +82,14 @@ const Shop = () => {
 export default function App() {
   const [state, dispatch] = useReducer(reducer, init);
 
-  useEffect(() => {
-    fetch('https://facelook-pro-njx2.onrender.com/api/products')
-      .then(res => res.json())
-      .then(data => dispatch({ type: 'SET_PRODUCTS', payload: Array.isArray(data) ? data : [] }))
-      .catch(() => dispatch({ type: 'SET_PRODUCTS', payload: [] }));
-  }, []);
+  // App.jsx
+useEffect(() => {
+  // Ensure this URL matches your Render link exactly
+  fetch('https://facelook-pro-njx2.onrender.com/api/products') 
+    .then(res => res.json())
+    .then(data => dispatch({ type: 'SET_PRODUCTS', payload: Array.isArray(data) ? data : [] }))
+    .catch(() => dispatch({ type: 'SET_PRODUCTS', payload: [] }));
+}, []);
 
   useEffect(() => {
     if (state.toast) {
