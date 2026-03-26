@@ -14,7 +14,7 @@ const CATS = ['All','Lips','Eyes','Face','Nails'];
 const Ctx = createContext();
 
 // ═══════════════════════════════════════════
-// ENGINE: REDUCER (Updated with Persistence)
+// ENGINE: REDUCER
 // ═══════════════════════════════════════════
 const init = { 
   page: 'home', 
@@ -74,14 +74,18 @@ const Home = () => {
   const {state:s, dispatch:d} = useContext(Ctx);
   return (
     <div className="fade-in">
-      {/* ... Hero Section ... */}
+       <div className="hero" style={{minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1600')`, backgroundSize: 'cover', backgroundPosition: 'center', textAlign: 'center', color: '#fff'}}>
+        <div style={{background: 'rgba(58, 32, 32, 0.6)', padding: '40px', borderRadius: '20px', backdropFilter: 'blur(10px)'}}>
+          <h1 style={{fontFamily: 'Bebas Neue', fontSize: '80px', letterSpacing: '10px'}}>FACÉLOOK</h1>
+          <p style={{fontSize: '20px', letterSpacing: '2px', marginBottom: '20px'}}>LUXURY DEFINED. RADIANCE REVEALED.</p>
+          <button className="luxe-btn" onClick={()=>d({type:'GO', page:'shop'})}>EXPLORE COLLECTION</button>
+        </div>
+      </div>
       <div className="section" style={{padding: '60px 20px'}}>
-        <div className="section-head" style={{display:'flex', justifyContent:'space-between', alignItems:'center', maxWidth:'1200px', margin:'0 auto'}}>
+        <div className="section-head" style={{display:'flex', justifyContent:'space-between', alignItems:'center', maxWidth:'1200px', margin:'0 auto', marginBottom: '30px'}}>
           <h2 style={{fontFamily:'Playfair Display', fontSize:'32px'}}>Trending Now</h2>
           <span onClick={()=>d({type:'GO', page:'shop'})} style={{cursor:'pointer', color:T.rose, fontWeight:'bold'}}>View All →</span>
         </div>
-        
-        {/* We use .slice(0, 4) to only show the top 4 items on the landing page */}
         <div className="carousel" style={{maxWidth:'1200px', margin:'0 auto'}}>
           {s.products.slice(0, 4).map(p => <PCard key={p._id} p={p} />)}
         </div>
@@ -94,11 +98,7 @@ const Shop = () => {
   const {state:s} = useContext(Ctx);
   const [cat, setCat] = useState('All');
   const [search, setSearch] = useState('');
-  
-  const filtered = s.products.filter(p => 
-    (cat === 'All' || p.category === cat) && 
-    (p.name.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filtered = s.products.filter(p => (cat === 'All' || p.category === cat) && (p.name.toLowerCase().includes(search.toLowerCase())));
 
   return (
     <div className="shop-layout fade-in">
@@ -117,19 +117,18 @@ const Shop = () => {
 const Cart = () => {
   const {state:s, dispatch:d} = useContext(Ctx);
   const total = s.cart.reduce((a,i)=>a+i.price*i.qty,0);
-
   if(s.cart.length===0) return <div className="p-100">Your Bag is Empty. 💄</div>;
 
   return (
     <div className="cart-page fade-in">
-      <h2>Shopping Bag</h2>
+      <h2 style={{fontFamily: 'Playfair Display', marginBottom: '30px'}}>Shopping Bag</h2>
       <div className="cart-list">
         {s.cart.map(item => (
           <div key={item._id} className="cart-item">
             <img src={item.image} alt={item.name} />
-            <div className="cart-details">
+            <div className="cart-details" style={{flex: 1}}>
               <h4>{item.name}</h4>
-              <p>₹{item.price}</p>
+              <p style={{color: T.roseDark, fontWeight: 'bold'}}>₹{item.price}</p>
             </div>
             <div className="qty-ctrl">
               <button onClick={()=>d({type:'CART_QTY', id:item._id, qty:item.qty-1})}>-</button>
@@ -140,9 +139,11 @@ const Cart = () => {
           </div>
         ))}
       </div>
-      <div className="cart-footer">
-        <h3>Total: ₹{total}</h3>
-        <button className="luxe-btn" style={{width:'100%'}} onClick={()=>alert('Redirecting to Payment Gateway...')}>CHECKOUT</button>
+      <div className="cart-footer" style={{marginTop: '40px', borderTop: `1px solid ${T.border}`, paddingTop: '20px'}}>
+        <div style={{display:'flex', justifyContent:'space-between', fontSize: '24px', fontWeight: 'bold', marginBottom: '20px'}}>
+          <span>Total:</span><span>₹{total}</span>
+        </div>
+        <button className="luxe-btn" style={{width:'100%'}} onClick={()=>alert('Redirecting to Payment Gateway...')}>PROCEED TO CHECKOUT</button>
       </div>
     </div>
   );
@@ -174,95 +175,76 @@ export default function App() {
   return (
     <Ctx.Provider value={{state, dispatch}}>
       <style>{`
-        /* ═══════════════════════════════════════════
-   FINAL CLEANUP STYLE BLOCK
-   ═══════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital@0;1&family=Jost:wght@300;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital@0;1&family=Jost:wght@300;500;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Jost', sans-serif; background: ${T.bg}; overflow-x: hidden; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Jost', sans-serif; background: ${T.bg}; overflow-x: hidden; }
+        /* NAV STYLING */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; }
+        .logo { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 6px; color: ${T.rose}; cursor: pointer; }
 
-/* 1. THE CAROUSEL (Landing Page) */
-.carousel { 
-  display: flex; 
-  overflow-x: auto; 
-  gap: 20px; 
-  padding: 20px; 
-  scrollbar-width: none; 
-  -ms-overflow-style: none; 
-}
-.carousel::-webkit-scrollbar { display: none; }
-.carousel .p-card { min-width: 280px; flex-shrink: 0; }
+        /* DRAWER FIX: Now Fixed and Hidden by Default */
+        .drawer { position: fixed; top: 0; left: ${state.drawer ? '0' : '-100%'}; width: 320px; height: 100vh; background: ${T.card}; z-index: 2000; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); padding: 80px 40px; box-shadow: 10px 0 50px rgba(0,0,0,0.1); }
+        .overlay { position: fixed; inset: 0; background: rgba(58, 32, 32, 0.4); backdrop-filter: blur(4px); z-index: 1500; display: ${state.drawer ? 'block' : 'none'}; }
 
-/* 2. THE SHOP GRID */
-.grid { 
-  flex: 1; 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-  gap: 30px; 
-}
+        /* GRID & CAROUSEL FIXES */
+        .carousel { display: flex; overflow-x: auto; gap: 20px; padding: 20px; scrollbar-width: none; }
+        .carousel::-webkit-scrollbar { display: none; }
+        .carousel .p-card { min-width: 280px; flex-shrink: 0; }
 
-/* 3. PRODUCT CARDS & IMAGES */
-.p-card { 
-  background: ${T.card}; 
-  border-radius: 30px; 
-  overflow: hidden; 
-  box-shadow: ${T.shadow}; 
-  position: relative; 
-  transition: 0.3s; 
-}
-.p-card:hover { transform: translateY(-10px); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 30px; padding-bottom: 50px; }
 
-.p-img { 
-  height: 250px; 
-  width: 100%;
-  background: ${T.nude};
-  overflow: hidden;
-}
-.p-img img { 
-  width: 100%; 
-  height: 100%; 
-  object-fit: cover; 
-  transition: 0.5s ease;
-}
-.p-card:hover .p-img img { transform: scale(1.1); }
+        .p-card { background: ${T.card}; border-radius: 30px; overflow: hidden; box-shadow: ${T.shadow}; position: relative; transition: 0.3s; height: 100%; }
+        .p-card:hover { transform: translateY(-10px); }
+        .p-img { height: 250px; width: 100%; background: ${T.nude}; overflow: hidden; }
+        .p-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .p-card:hover .p-img img { transform: scale(1.1); }
+        .p-txt { padding: 20px; }
+        .p-name { font-weight: 700; color: ${T.td}; margin-bottom: 5px; }
+        .p-price { color: ${T.rose}; font-weight: bold; }
+        .p-add { position: absolute; right: 20px; bottom: 20px; width: 45px; height: 45px; border-radius: 50%; border: none; background: ${T.rose}; color: #fff; font-size: 24px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(183,110,121,0.3); }
+        .p-add:hover { background: ${T.roseDark}; transform: rotate(90deg); }
 
-/* 4. UI ELEMENTS */
-nav { display: flex; justify-content: space-between; align-items: center; padding: 25px; background: rgba(245, 237, 229, 0.85); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; }
-.logo { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 6px; color: ${T.rose}; cursor: pointer; }
-.luxe-btn { background: ${T.rose}; color: #fff; border: none; padding: 18px 45px; font-family: 'Bebas Neue'; letter-spacing: 3px; cursor: pointer; border-radius: 60px; margin-top: 20px; transition: 0.3s; }
-.p-add { position: absolute; right: 20px; bottom: 20px; width: 40px; height: 40px; border-radius: 50%; border: none; background: ${T.rose}; color: #fff; font-size: 24px; cursor: pointer; }
+        .luxe-btn { background: ${T.rose}; color: #fff; border: none; padding: 18px 45px; font-family: 'Bebas Neue'; letter-spacing: 3px; cursor: pointer; border-radius: 60px; transition: 0.3s; }
+        .luxe-btn:hover { background: ${T.roseDark}; letter-spacing: 5px; }
 
-/* 5. SHOP & CART LAYOUTS */
-.shop-layout { display: flex; padding: 40px; gap: 40px; max-width: 1400px; margin: 0 auto; }
-.sidebar { width: 250px; display: none; }
-@media (min-width: 1024px) { .sidebar { display: block; } }
-.search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid ${T.nudeDark}; margin-bottom: 20px; }
+        .shop-layout { display: flex; padding: 40px 5%; gap: 40px; max-width: 1400px; margin: 0 auto; }
+        .sidebar { width: 250px; display: none; }
+        @media (min-width: 1024px) { .sidebar { display: block; } }
+        .side-item { padding: 15px; cursor: pointer; border-radius: 12px; transition: 0.3s; margin-bottom: 5px; font-weight: 500; }
+        .side-item:hover { background: ${T.nude}; }
+        .side-item.active { background: ${T.rose}; color: #fff; }
+        .search-bar { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid ${T.nudeDark}; margin-bottom: 30px; font-family: 'Jost'; }
 
-.cart-page { max-width: 800px; margin: 40px auto; padding: 20px; }
-.cart-item { display: flex; align-items: center; background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: ${T.shadow}; gap: 20px; }
-.cart-item img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: ${T.roseDark}; color: #fff; padding: 15px 40px; border-radius: 50px; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-weight: 500; letter-spacing: 1px; }
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .p-100 { padding: 150px 20px; text-align: center; font-style: italic; color: ${T.tl}; font-size: 20px; }
       `}</style>
 
-      {state.toast && <div className="toast">✓ {state.toast}</div>}
-      <div className="overlay" onClick={()=>dispatch({type:'TGL_DRAWER'})}></div>
+      {/* OVERLAYS AT THE BOTTOM */}
+      <div className={`overlay ${state.drawer ? 'show' : ''}`} onClick={()=>dispatch({type:'TGL_DRAWER'})}></div>
       <div className="drawer">
-        <h2 className="logo" style={{marginBottom: 60}}>FACÉLOOK</h2>
+        <h2 className="logo" style={{marginBottom: 60}} onClick={()=>dispatch({type:'GO', page:'home'})}>FACÉLOOK</h2>
         {['home', 'shop', 'cart'].map(p => (
-          <div key={p} onClick={()=>dispatch({type:'GO', page: p})} style={{padding: '20px 0', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 3, fontWeight: 700}}>
+          <div key={p} onClick={()=>dispatch({type:'GO', page: p})} style={{padding: '20px 0', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 3, fontWeight: 700, color: state.page === p ? T.rose : T.td}}>
             {p}
           </div>
         ))}
       </div>
 
+      {state.toast && <div className="toast">✓ {state.toast}</div>}
+
+      {/* MAIN NAV */}
       <nav>
         <div onClick={()=>dispatch({type:'TGL_DRAWER'})} style={{cursor: 'pointer', fontSize: 32}}>☰</div>
         <div className="logo" onClick={()=>dispatch({type:'GO', page: 'home'})}>FACÉLOOK</div>
         <div style={{fontSize: 32, cursor: 'pointer', position: 'relative'}} onClick={()=>dispatch({type:'GO', page: 'cart'})}>
-          👜 {state.cart.length > 0 && <span style={{position:'absolute', top:-5, right:-10, background:T.rose, color:'#fff', fontSize:14, borderRadius:'50%', padding:'2px 8px'}}>{state.cart.reduce((a,i)=>a+i.qty,0)}</span>}
+          👜 {state.cart.length > 0 && <span style={{position:'absolute', top:-5, right:-10, background:T.rose, color:'#fff', fontSize:14, borderRadius:'50%', padding:'2px 8px', fontWeight:'bold'}}>{state.cart.reduce((a,i)=>a+i.qty,0)}</span>}
         </div>
       </nav>
 
+      {/* CONTENT ENGINE */}
       {state.loading ? <div className="p-100">CURATING LUXURY... 💄</div> : (views[state.page] || <Home/>)}
     </Ctx.Provider>
   );
