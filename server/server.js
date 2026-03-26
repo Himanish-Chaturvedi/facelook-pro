@@ -12,7 +12,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // 2. THE CORS HANDSHAKE (No trailing slash)
 app.use(cors({ 
-  origin: 'https://facelook-pro-njx2.vercel.app',
+  origin: 'https://facelook-pro.vercel.app',
   credentials: true 
 }));
 app.use(express.json());
