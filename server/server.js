@@ -10,18 +10,22 @@ connectDB();
 
 const app = express();
 
+// ═══════════════════════════════════════════
+// THE CORS HANDSHAKE (No trailing slash)
+// ═══════════════════════════════════════════
 app.use(cors({
-  origin: 'https://facelook-pro-njx2.vercel.app', // REMOVED THE LAST /
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],     // Added PUT/DELETE for full functionality
+  origin: 'https://facelook-pro-njx2.vercel.app', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
 
 app.use(express.json());
 
-// THESE TWO LINES ARE CRITICAL
+// Main API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/payment', paymentRoutes); 
 
+// Health Check for Debugging
 app.get('/api/health', (req, res) => {
   res.json({ message: 'FACÉLOOK Backend Engine is running perfectly! 🚀' });
 });
