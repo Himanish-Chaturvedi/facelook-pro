@@ -2,16 +2,19 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext'; 
 
-// IMPORTING PREMIUM ICONS (Feather Icons pack)
-import { FiSearch, FiHeart, FiShoppingCart, FiMenu } from 'react-icons/fi';
+// IMPORTING PREMIUM ICONS
+import { FiSearch, FiHeart, FiShoppingCart, FiMenu, FiX } from 'react-icons/fi';
 
 const Navbar = () => {
   const { cartCount } = useCart(); 
   const navigate = useNavigate();
   
+  // States for interactive elements
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Search execution logic
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -24,12 +27,16 @@ const Navbar = () => {
   };
 
   return (
-    <nav>
+    <nav style={{ position: 'relative', background: '#FDF8F4', borderBottom: '1px solid #D9C8BC' }}>
       <div className="nav-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 5%' }}>
         
-        {/* HAMBURGER ICON */}
-        <div className="hamburger" style={{ cursor: 'pointer' }}>
-          <FiMenu size={28} color="#3A2020" />
+        {/* 1. FUNCTIONAL HAMBURGER ICON */}
+        <div 
+          className="hamburger" 
+          style={{ cursor: 'pointer', zIndex: 1001 }}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <FiX size={28} color="#3A2020" /> : <FiMenu size={28} color="#3A2020" />}
         </div>
         
         {/* LOGO SECTION */}
@@ -41,7 +48,7 @@ const Navbar = () => {
           />
         </Link>
         
-        {/* MENU LINKS */}
+        {/* DESKTOP MENU LINKS */}
         <div className="nav-menu" style={{ display: 'flex', gap: '30px' }}>
           <Link to="/" style={{ textDecoration: 'none', color: '#3A2020', fontWeight: '500', textTransform: 'uppercase' }}>Home</Link>
           <Link to="/products" style={{ textDecoration: 'none', color: '#3A2020', fontWeight: '500', textTransform: 'uppercase' }}>Shop All</Link>
@@ -52,12 +59,12 @@ const Navbar = () => {
         {/* ICONS SECTION */}
         <div className="nav-icons" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           
-          {/* SEARCH WIDGET */}
-          <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center' }}>
+          {/* 2. FUNCTIONAL SEARCH WIDGET */}
+          <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
             {isSearchOpen && (
               <input 
                 type="text" 
-                placeholder="Search collection..." 
+                placeholder="Search products..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
@@ -65,10 +72,13 @@ const Navbar = () => {
                   padding: '8px 15px',
                   borderRadius: '20px',
                   border: '1px solid #D9C8BC', 
-                  marginRight: '10px',
                   outline: 'none',
                   fontFamily: 'Jost, sans-serif',
-                  width: '200px'
+                  width: '200px',
+                  position: 'absolute',
+                  right: '35px', // Floats to the left of the magnifying glass
+                  background: '#FFFFFF',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
                 }}
               />
             )}
@@ -77,21 +87,18 @@ const Navbar = () => {
               onClick={() => !isSearchOpen && setIsSearchOpen(true)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
             >
-              {/* REACT-ICONS SEARCH */}
               <FiSearch size={24} color="#3A2020" />
             </button>
           </form>
 
-          {/* REACT-ICONS HEART */}
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
+          {/* 3. FUNCTIONAL HEART / WISHLIST */}
+          <Link to="/wishlist" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <FiHeart size={24} color="#3A2020" />
-          </button>
+          </Link>
           
-          {/* REACT-ICONS CART */}
+          {/* 4. FUNCTIONAL CART */}
           <Link to="/cart" style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'relative', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <FiShoppingCart size={24} color="#3A2020" />
-            
-            {/* CART BADGE */}
             {cartCount > 0 && (
               <span className="cart-badge" style={{ position: 'absolute', top: '-8px', right: '-10px', background: '#B76E79', color: '#fff', fontSize: '11px', fontWeight: 'bold', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {cartCount}
@@ -100,6 +107,16 @@ const Navbar = () => {
           </Link>
         </div>
       </div>
+
+      {/* MOBILE DROPDOWN MENU (Reveals when Hamburger is clicked) */}
+      {isMobileMenuOpen && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', background: '#FDF8F4', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', borderBottom: '1px solid #D9C8BC', zIndex: 1000, boxShadow: '0 10px 20px rgba(0,0,0,0.05)' }}>
+          <Link to="/" onClick={() => setIsMobileMenuOpen(false)} style={{ textDecoration: 'none', color: '#3A2020', fontWeight: '500', textTransform: 'uppercase' }}>Home</Link>
+          <Link to="/products" onClick={() => setIsMobileMenuOpen(false)} style={{ textDecoration: 'none', color: '#3A2020', fontWeight: '500', textTransform: 'uppercase' }}>Shop All</Link>
+          <Link to="/about" onClick={() => setIsMobileMenuOpen(false)} style={{ textDecoration: 'none', color: '#3A2020', fontWeight: '500', textTransform: 'uppercase' }}>About Us</Link>
+          <Link to="/support" onClick={() => setIsMobileMenuOpen(false)} style={{ textDecoration: 'none', color: '#3A2020', fontWeight: '500', textTransform: 'uppercase' }}>Support</Link>
+        </div>
+      )}
     </nav>
   );
 };
