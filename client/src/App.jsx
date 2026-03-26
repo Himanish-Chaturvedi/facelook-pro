@@ -85,7 +85,7 @@ export default function App() {
   // App.jsx
 useEffect(() => {
   // Ensure this URL matches your Render link exactly
-  fetch('https://facelook-pro-njx2.onrender.com/api/products') 
+  fetch('https://facelook-pro.onrender.com/api/products') 
     .then(res => res.json())
     .then(data => dispatch({ type: 'SET_PRODUCTS', payload: Array.isArray(data) ? data : [] }))
     .catch(() => dispatch({ type: 'SET_PRODUCTS', payload: [] }));
