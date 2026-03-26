@@ -14,7 +14,7 @@ const Navbar = () => {
         <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <img 
             src="D:\Facelook-Project\client\public\facelook.png" /* ⬅️ Just the forward slash and the file name! */
-            alt="FACÉLOOK Logo" 
+            alt="D:\Facelook-Project\client\public\facelook.png" 
             style={{ height: '40px', objectFit: 'contain', cursor: 'pointer' }}
           />
         </Link>
