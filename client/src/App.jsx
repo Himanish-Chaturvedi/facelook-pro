@@ -199,33 +199,14 @@ export default function App() {
     }
   }, [state.toast]);
 
-  // Inside App()
-const views = { 
-  home: <Home/>, 
-  shop: <Shop/>, 
-  cart: <Cart/>, 
-  login: <Auth/> // Pointing to the new Auth component
-};
+  // Pointing to the Auth component we defined earlier
+  const views = { 
+    home: <Home/>, 
+    shop: <Shop/>, 
+    cart: <Cart/>, 
+    login: <Auth/> 
+  };
 
-// Inside the Drawer return
-<div className="drawer">
-  <h2 className="logo" style={{marginBottom: 60}} onClick={()=>dispatch({type:'GO', page:'home'})}>FACÉLOOK</h2>
-  
-  {/* Standard Links */}
-  {['home', 'shop', 'cart'].map(p => (
-    <div key={p} onClick={()=>dispatch({type:'GO', page: p})} style={{padding: '20px 0', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 3, fontWeight: 700, color: state.page === p ? T.rose : T.td}}>
-      {p}
-    </div>
-  ))}
-
-  {/* NEW: Dedicated Login/Signup Button in Drawer */}
-  <div 
-    onClick={()=>dispatch({type:'GO', page: 'login'})} 
-    style={{marginTop: '40px', padding: '15px', background: T.nude, borderRadius: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '700', color: T.roseDark, border: `1px solid ${T.rose}`}}
-  >
-    LOGIN / SIGNUP
-  </div>
-</div>
   return (
     <Ctx.Provider value={{state, dispatch}}>
       <style>{`
@@ -233,32 +214,23 @@ const views = {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Jost', sans-serif; background: ${T.bg}; overflow-x: hidden; }
 
-        /* NAV STYLING */
         nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid ${T.border}; }
         .logo { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 6px; color: ${T.rose}; cursor: pointer; }
 
-        /* DRAWER FIX: Now Fixed and Hidden by Default */
         .drawer { position: fixed; top: 0; left: ${state.drawer ? '0' : '-100%'}; width: 320px; height: 100vh; background: ${T.card}; z-index: 2000; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); padding: 80px 40px; box-shadow: 10px 0 50px rgba(0,0,0,0.1); }
         .overlay { position: fixed; inset: 0; background: rgba(58, 32, 32, 0.4); backdrop-filter: blur(4px); z-index: 1500; display: ${state.drawer ? 'block' : 'none'}; }
 
-        /* GRID & CAROUSEL FIXES */
         .carousel { display: flex; overflow-x: auto; gap: 20px; padding: 20px; scrollbar-width: none; }
         .carousel::-webkit-scrollbar { display: none; }
         .carousel .p-card { min-width: 280px; flex-shrink: 0; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 30px; padding-bottom: 50px; }
-
         .p-card { background: ${T.card}; border-radius: 30px; overflow: hidden; box-shadow: ${T.shadow}; position: relative; transition: 0.3s; height: 100%; }
         .p-card:hover { transform: translateY(-10px); }
         .p-img { height: 250px; width: 100%; background: ${T.nude}; overflow: hidden; }
         .p-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .p-card:hover .p-img img { transform: scale(1.1); }
-        .p-txt { padding: 20px; }
-        .p-name { font-weight: 700; color: ${T.td}; margin-bottom: 5px; }
-        .p-price { color: ${T.rose}; font-weight: bold; }
-        .p-add { position: absolute; right: 20px; bottom: 20px; width: 45px; height: 45px; border-radius: 50%; border: none; background: ${T.rose}; color: #fff; font-size: 24px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(183,110,121,0.3); }
-        .p-add:hover { background: ${T.roseDark}; transform: rotate(90deg); }
-
+        
         .luxe-btn { background: ${T.rose}; color: #fff; border: none; padding: 18px 45px; font-family: 'Bebas Neue'; letter-spacing: 3px; cursor: pointer; border-radius: 60px; transition: 0.3s; }
         .luxe-btn:hover { background: ${T.roseDark}; letter-spacing: 5px; }
 
@@ -266,30 +238,38 @@ const views = {
         .sidebar { width: 250px; display: none; }
         @media (min-width: 1024px) { .sidebar { display: block; } }
         .side-item { padding: 15px; cursor: pointer; border-radius: 12px; transition: 0.3s; margin-bottom: 5px; font-weight: 500; }
-        .side-item:hover { background: ${T.nude}; }
         .side-item.active { background: ${T.rose}; color: #fff; }
         .search-bar { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid ${T.nudeDark}; margin-bottom: 30px; font-family: 'Jost'; }
 
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: ${T.roseDark}; color: #fff; padding: 15px 40px; border-radius: 50px; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-weight: 500; letter-spacing: 1px; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: ${T.roseDark}; color: #fff; padding: 15px 40px; border-radius: 50px; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-weight: 500; }
         .fade-in { animation: fadeIn 0.8s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .p-100 { padding: 150px 20px; text-align: center; font-style: italic; color: ${T.tl}; font-size: 20px; }
       `}</style>
 
-      {/* OVERLAYS AT THE BOTTOM */}
-      <div className={`overlay ${state.drawer ? 'show' : ''}`} onClick={()=>dispatch({type:'TGL_DRAWER'})}></div>
+      {/* 1. OVERLAYS (Now correctly inside the return) */}
+      <div className="overlay" onClick={()=>dispatch({type:'TGL_DRAWER'})}></div>
       <div className="drawer">
         <h2 className="logo" style={{marginBottom: 60}} onClick={()=>dispatch({type:'GO', page:'home'})}>FACÉLOOK</h2>
+        
         {['home', 'shop', 'cart'].map(p => (
           <div key={p} onClick={()=>dispatch({type:'GO', page: p})} style={{padding: '20px 0', borderBottom: `1px solid ${T.border}`, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 3, fontWeight: 700, color: state.page === p ? T.rose : T.td}}>
             {p}
           </div>
         ))}
+
+        {/* VIP LOGIN OPTION */}
+        <div 
+          onClick={()=>dispatch({type:'GO', page: 'login'})} 
+          style={{marginTop: '40px', padding: '15px', background: T.nude, borderRadius: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '700', color: T.roseDark, border: `1px solid ${T.rose}`}}
+        >
+          LOGIN / SIGNUP
+        </div>
       </div>
 
       {state.toast && <div className="toast">✓ {state.toast}</div>}
 
-      {/* MAIN NAV */}
+      {/* 2. NAVIGATION */}
       <nav>
         <div onClick={()=>dispatch({type:'TGL_DRAWER'})} style={{cursor: 'pointer', fontSize: 32}}>☰</div>
         <div className="logo" onClick={()=>dispatch({type:'GO', page: 'home'})}>FACÉLOOK</div>
@@ -298,7 +278,7 @@ const views = {
         </div>
       </nav>
 
-      {/* CONTENT ENGINE */}
+      {/* 3. CONTENT ENGINE */}
       {state.loading ? <div className="p-100">CURATING LUXURY... 💄</div> : (views[state.page] || <Home/>)}
     </Ctx.Provider>
   );
